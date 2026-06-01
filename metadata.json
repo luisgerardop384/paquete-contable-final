@@ -1,0 +1,6 @@
+{
+  "name": "Sistema Contable de Inventarios Perpetuos",
+  "description": "Sistema contable de inventarios perpetuos con cuadrícula estilo Excel, captura de pólizas, esquemas de mayor, balanza de comprobación, estados financieros clásicos y exportación a PDF.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

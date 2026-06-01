@@ -1,0 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  body {
+    background-color: #f3f4f6;
+    color: #1f2937;
+    font-size: 13px;
+  }
+}
+
+/* Excel Style Spreadsheet Grid Customizations */
+.excel-grid {
+  font-family: "Inter", -apple-system, sans-serif;
+  font-feature-settings: "tnum";
+}
+
+.excel-cell-input:focus {
+  outline: 2px solid #22c55e;
+  outline-offset: -2px;
+}
+
+/* Custom print styles to emulate official printed ledger reports */
+@media print {
+  /* Set default print configurations and high resolution coloring */
+  html, body {
+    background-color: white !important;
+    background: white !important;
+    color: black !important;
+    font-size: 11px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Hide non-printable items like panel forms, calculators, buttons, scrollbars, headers */
+  .no-print,
+  button,
+  header,
+  footer,
+  nav,
+  input:not([type="text"]):not([type="number"]),
+  .bottom-tabs,
+  .policy-form,
+  .policy-capture-sidebar,
+  .scratchpad-panel,
+  #calculator-scratchpad-panel,
+  .help-banner,
+  .editor-controls,
+  .interactive-element,
+  [role="tablist"] {
+    display: none !important;
+  }
+
+  /* Ensure sheet contents are visible and styled natively */
+  .printable-area {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Printable container layout adjustments */
+  .excel-container {
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    background: white !important;
+  }
+
+  /* Preserve table grids and borders on print, but make them crisp black/gray */
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  th, td {
+    color: black !important;
+    font-size: 11px !important;
+    padding: 3px 6px !important;
+  }
+
+  /* Ensure border colors are visible in print while keeping double and solid differences */
+  .border, .border-b, .border-t, .border-r, .border-l, .border-gray-200, .border-gray-150, .border-gray-220 {
+    border-color: #333333 !important;
+  }
+
+  /* Force table headers to repeat nicely, keep layouts page-break clean */
+  .page-break-avoid {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .print-page-break {
+    page-break-before: always !important;
+    break-before: page !important;
+    display: block !important;
+    margin-top: 0 !important;
+    padding-top: 1cm !important;
+  }
+
+  /* Custom named pages for Chrome/Safari landscape & portrait dynamic orientation */
+  @page {
+    margin: 10mm;
+  }
+
+  @page portrait-layout {
+    size: portrait;
+    margin: 10mm;
+  }
+
+  @page landscape-layout {
+    size: landscape;
+    margin: 10mm;
+  }
+
+  .print-portrait {
+    page: portrait-layout !important;
+    break-inside: avoid !important;
+  }
+
+  .print-landscape {
+    page: landscape-page !important; /* fallback */
+    page: landscape-layout !important;
+    break-inside: avoid !important;
+  }
+}
