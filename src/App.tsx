@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { useAccountingStore } from './store';
-import { TabType } from './types';
+import { TabType } from './types'; 
 import ExcelHeader from './components/ExcelHeader';
 import CompanyProfileTab from './components/CompanyProfileTab';
 import PolicyManagerTab from './components/PolicyManagerTab';
