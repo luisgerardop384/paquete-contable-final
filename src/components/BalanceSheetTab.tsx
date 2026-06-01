@@ -8,8 +8,11 @@ import { useAccountingStore } from '../store';
 import DownloadToolbar from './DownloadToolbar';
 
 export default function BalanceSheetTab() {
-  const { policies } = useAccountingStore();
-  const [formatMode, setFormatMode] = useState<'Reporte' | 'Cuenta'>('Cuenta');
+  const { 
+    policies, 
+    balanceSheetFormat: formatMode, 
+    setBalanceSheetFormat: setFormatMode 
+  } = useAccountingStore();
 
   const handlePrint = () => {
     window.print();
@@ -204,7 +207,7 @@ export default function BalanceSheetTab() {
   });
 
   return (
-    <div className={`w-full bg-transparent select-none relative pb-12 ${formatMode === 'Cuenta' ? 'print-landscape' : 'print-portrait'}`}>
+    <div className={`w-full bg-transparent select-none relative pb-12 print-page-avoid-break ${formatMode === 'Cuenta' ? 'print-landscape' : 'print-portrait'}`}>
       
       {/* 1. COMPACT TAB SCREEN HEADER CONTROL PANEL */}
       <div className="no-print bg-slate-50 border border-gray-200 p-4 rounded-xl mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs">
@@ -251,7 +254,7 @@ export default function BalanceSheetTab() {
             <thead>
               <tr className="bg-slate-50/50 border-b border-gray-200 text-[10.5px] font-mono text-gray-400 uppercase tracking-widest h-10 select-none">
                 <th className="w-14 border-r border-gray-200 text-center font-bold">Fila</th>
-                <th className="border-r border-gray-220 text-left px-5 font-bold">Conceptos de la Estructura de Balance</th>
+                <th className="border-r border-gray-150 text-left px-5 font-bold">Conceptos de la Estructura de Balance</th>
                 <th className="w-40 border-r border-gray-200 text-right px-4 font-bold">Columna 1 (Parcial)</th>
                 <th className="w-40 border-r border-gray-200 text-right px-4 font-bold">Columna 2 (Subtotal)</th>
                 <th className="w-44 text-right px-4 font-bold">Columna 3 (Total)</th>
@@ -529,16 +532,16 @@ export default function BalanceSheetTab() {
                 {/* Twin headers representing left and right sides seamlessly */}
                 <tr className="bg-emerald-50/30 border-b border-gray-300 text-[10px] font-mono uppercase tracking-widest h-9 select-none">
                   {/* Left Headings */}
-                  <th className="w-10 border-r border-gray-200 text-center text-emerald-900 font-black">F</th>
-                  <th className="border-r border-gray-220 text-left px-3 text-emerald-900 font-bold">Cuentas del ACTIVO (Izquierda)</th>
-                  <th className="w-28 border-r border-gray-200 text-right px-3 text-emerald-900 font-bold">Parcial</th>
-                  <th className="w-32 border-r border-gray-250 text-right px-3 text-emerald-900 font-bold">Subtotal</th>
+                  <th className="w-[4%] border-r border-gray-200 text-center text-emerald-900 font-black">F</th>
+                  <th className="w-[26%] border-r border-gray-150 text-left px-3 text-emerald-900 font-bold">Cuentas del ACTIVO (Izquierda)</th>
+                  <th className="w-[10%] border-r border-gray-150 text-right px-3 text-emerald-900 font-bold">Parcial</th>
+                  <th className="w-[10%] border-r border-gray-250 text-right px-3 text-emerald-900 font-bold">Subtotal</th>
                   
                   {/* Right Headings */}
-                  <th className="w-10 border-r border-gray-200 text-center text-rose-900 font-black">F</th>
-                  <th className="border-r border-gray-220 text-left px-3 text-rose-900 font-bold">Cuentas del PASIVO Y CAPITAL (Derecha)</th>
-                  <th className="w-28 border-r border-gray-200 text-right px-3 text-rose-900 font-bold">Parcial</th>
-                  <th className="w-32 text-right px-3 text-rose-900 font-bold">Subtotal / Total</th>
+                  <th className="w-[4%] border-r border-gray-200 text-center text-rose-900 font-black">F</th>
+                  <th className="w-[26%] border-r border-gray-150 text-left px-3 text-rose-900 font-bold">Cuentas del PASIVO Y CAPITAL (Derecha)</th>
+                  <th className="w-[10%] border-r border-gray-150 text-right px-3 text-rose-900 font-bold">Parcial</th>
+                  <th className="w-[10%] text-right px-3 text-rose-900 font-bold">Subtotal / Total</th>
                 </tr>
               </thead>
               <tbody>

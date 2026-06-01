@@ -91,7 +91,7 @@ export default function LedgerTab() {
             <h3>LIBRO MAYOR GENERAL - CUENTAS T</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ledger-grid-print">
             {activeAccounts.map((acct) => {
               const data = getAccountTData(acct.code);
               const maxLength = Math.max(data.debits.length, data.credits.length);

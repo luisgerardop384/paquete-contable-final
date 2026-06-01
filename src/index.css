@@ -132,4 +132,53 @@
     page: landscape-layout !important;
     break-inside: avoid !important;
   }
+
+  .print-portada-hoja-unica {
+    page-break-after: always !important;
+    break-after: page !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .print-diary-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  .print-diary-table thead {
+    display: table-header-group !important;
+  }
+
+  .print-diary-table th, .print-diary-table td {
+    padding: 3px 5px !important;
+    font-size: 10px !important;
+  }
+
+  .ledger-grid-print {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .ledger-grid-print > div {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .print-page-avoid-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .page-break-after-always {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
 }

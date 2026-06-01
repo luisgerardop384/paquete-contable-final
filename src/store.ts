@@ -14,6 +14,10 @@ interface AccountingState {
   // Printing full package state
   isPrintingAll: boolean;
   setIsPrintingAll: (val: boolean) => void;
+
+  // Balance Sheet Format Selection ('Reporte' | 'Cuenta')
+  balanceSheetFormat: 'Reporte' | 'Cuenta';
+  setBalanceSheetFormat: (val: 'Reporte' | 'Cuenta') => void;
   
   // Company Profile / Portada
   companyHeader: CompanyHeader;
@@ -222,6 +226,7 @@ export const useAccountingStore = create<AccountingState>((set) => {
   const initialPolicies = getStored<Policy[]>('policies', DEMO_POLICIES);
   const initialSubaccounts = getStored<Subaccount[]>('subaccounts', DEFAULT_SUBACCOUNTS);
   const initialScratchpadText = getStored<string>('scratchpad', '/* Bloque de Notas y Lápiz Contable */\n// Realiza cálculos aritméticos sencillos rápido\n800000 - 8500 - 12000 = 779500\n150000 * 0.10 = 15000\n\n');
+  const initialBalanceSheetFormat = getStored<'Reporte' | 'Cuenta'>('balanceSheetFormat', 'Cuenta');
 
   return {
     activeTab: 'Portada',
@@ -229,6 +234,12 @@ export const useAccountingStore = create<AccountingState>((set) => {
     
     isPrintingAll: false,
     setIsPrintingAll: (val) => set({ isPrintingAll: val }),
+
+    balanceSheetFormat: initialBalanceSheetFormat,
+    setBalanceSheetFormat: (format) => set(() => {
+      saveStored('balanceSheetFormat', format);
+      return { balanceSheetFormat: format };
+    }),
     
     companyHeader: initialHeader,
     setCompanyHeader: (updated) => set((state) => {

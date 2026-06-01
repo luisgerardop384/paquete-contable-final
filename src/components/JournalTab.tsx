@@ -53,7 +53,7 @@ export default function JournalTab() {
             <h3>ZITÁCUARO IMPORTACIONES, S.A. DE C.V. ─ LIBRO DIARIO GENERAL</h3>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-6 print:hidden">
             {sortedPolicies.map((pol, pIdx) => {
               const isAdjText = pol.isAdjustment ? ' [ASIENTO DE AJUSTE]' : '';
               
@@ -241,6 +241,150 @@ export default function JournalTab() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* PRINT-ONLY UNIFIED CONTINUOUS JOURNAL TABLE (SAVING PAGES) */}
+          <div className="hidden print:block w-full">
+            <table className="print-diary-table w-full border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b border-gray-300 text-[10px] font-mono text-gray-800 uppercase tracking-widest font-bold">
+                  <th className="w-20 border border-gray-300 text-left px-2 py-1 font-bold">Fecha</th>
+                  <th className="w-16 border border-gray-300 text-center py-1 font-bold">Clave</th>
+                  <th className="border border-gray-300 text-left px-2 py-1 font-bold">Cuentas - Subcuentas Contables / Libro Diario</th>
+                  <th className="w-24 border border-gray-300 text-right px-2 py-1 font-bold">Parcial</th>
+                  <th className="w-28 border border-gray-300 text-right px-2 py-1 font-bold">Debe (Cargo)</th>
+                  <th className="w-28 border border-gray-300 text-right px-2 py-1 font-bold">Haber (Abono)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedPolicies.map((pol, pIdx) => {
+                  const isAdjText = pol.isAdjustment ? ' [AJUSTE]' : '';
+                  const formattedReference = pol.reference ? `(Doc: ${pol.reference})` : '(No Ref)';
+                  const headerText = `Asiento Contable N° ${pIdx + 1} - Póliza: ${pol.type} ${pol.number} | Concepto: ${pol.concept} ${formattedReference}${isAdjText} — Auxiliares: L.C. Luis Gerardo Perez`;
+
+                  interface LocalRowPrint {
+                    isSubaccount: boolean;
+                    date: string;
+                    code: string;
+                    name: string;
+                    isDebitNormal: boolean;
+                    partial: number | null;
+                    debit: number | null;
+                    credit: number | null;
+                  }
+
+                  const localRows: LocalRowPrint[] = [];
+                  pol.movements.forEach((mov) => {
+                    const foundAcct = accounts.find((a) => a.code === mov.accountCode);
+                    const acctName = foundAcct ? foundAcct.name : 'Cuenta Desconocida';
+                    const isDebitNormal = (mov.debit || 0) > 0;
+
+                    localRows.push({
+                      isSubaccount: false,
+                      date: pol.date,
+                      code: mov.accountCode,
+                      name: acctName,
+                      isDebitNormal,
+                      partial: null,
+                      debit: mov.debit || null,
+                      credit: mov.credit || null
+                    });
+
+                    if (mov.subaccountCode) {
+                      const foundSub = subaccounts.find((s) => s.code === mov.subaccountCode && s.parentCode === mov.accountCode);
+                      const subName = foundSub ? foundSub.name : 'Subcuenta Desconocida';
+                      localRows.push({
+                        isSubaccount: true,
+                        date: pol.date,
+                        code: mov.subaccountCode,
+                        name: `↪ ${mov.subaccountCode} ${subName}`,
+                        isDebitNormal,
+                        partial: mov.debit || mov.credit || null,
+                        debit: null,
+                        credit: null
+                      });
+                    }
+                  });
+
+                  let firstDebitIndex = -1;
+                  let firstCreditIndex = -1;
+                  let firstPartialIndex = -1;
+                  localRows.forEach((r, idx) => {
+                    if (firstDebitIndex === -1 && r.debit && r.debit > 0) firstDebitIndex = idx;
+                    if (firstCreditIndex === -1 && r.credit && r.credit > 0) firstCreditIndex = idx;
+                    if (firstPartialIndex === -1 && r.partial && r.partial > 0) firstPartialIndex = idx;
+                  });
+
+                  return (
+                    <React.Fragment key={`pol-print-row-${pol.id}`}>
+                      {/* Concept seat divider row */}
+                      <tr className="fila-concepto-asiento bg-slate-50/70 border-y border-gray-300 font-bold page-break-avoid">
+                        <td colSpan={6} className="border border-gray-300 px-2 py-1.5 text-slate-800 font-black text-[9.5px]">
+                          {headerText}
+                        </td>
+                      </tr>
+                      {localRows.map((r, idx) => {
+                        const amountTextDebit = formatCellAmountVal(r.debit);
+                        const amountTextCredit = formatCellAmountVal(r.credit);
+                        const amountTextPartial = formatCellAmountVal(r.partial);
+
+                        let indentStyleClass = "pl-1 font-bold text-slate-900";
+                        if (r.isSubaccount) {
+                          indentStyleClass = r.isDebitNormal 
+                            ? "pl-5 italic text-gray-600 text-[10px]" 
+                            : "pl-10 italic text-gray-600 text-[10px]";
+                        } else if (!r.isDebitNormal) {
+                          indentStyleClass = "pl-6 font-bold text-slate-900";
+                        }
+
+                        return (
+                          <tr key={`print-r-${pol.id}-${idx}`} className="border-b border-gray-300 hover:bg-slate-50/30 page-break-avoid h-6.5">
+                            <td className="border border-gray-300 px-2 py-0.5 font-mono text-gray-500 text-[9px]">
+                              {idx === 0 ? r.date : ''}
+                            </td>
+                            <td className="border border-gray-300 text-center py-0.5 font-mono text-gray-700 text-[9.5px]">
+                              {r.code}
+                            </td>
+                            <td className="border border-gray-300 px-2 py-0.5">
+                              <span className={indentStyleClass}>
+                                {r.name}
+                              </span>
+                            </td>
+                            <td className="border border-gray-300 px-2 py-0.5 text-right font-mono text-[9px] text-gray-500">
+                              {amountTextPartial 
+                                ? (idx === firstPartialIndex ? `$ ${amountTextPartial}` : amountTextPartial) 
+                                : ''}
+                            </td>
+                            <td className="border border-gray-300 px-2 py-0.5 text-right font-mono text-[9.5px] font-semibold text-blue-900">
+                              {amountTextDebit 
+                                ? (idx === firstDebitIndex ? `$ ${amountTextDebit}` : amountTextDebit) 
+                                : ''}
+                            </td>
+                            <td className="border border-gray-300 px-2 py-0.5 text-right font-mono text-[9.5px] font-semibold text-red-900">
+                              {amountTextCredit 
+                                ? (idx === firstCreditIndex ? `$ ${amountTextCredit}` : amountTextCredit) 
+                                : ''}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </React.Fragment>
+                  );
+                })}
+                <tr className="bg-slate-50 border-t-2 border-b-4 border-double border-slate-900 font-bold h-9">
+                  <td colSpan={3} className="border border-gray-300 px-3 py-1 text-right text-slate-850 font-mono text-[9px] uppercase font-bold">
+                    ∑ SUMAS IGUALES DEL LIBRO DIARIO GENERAL (PERIODO CONTABLE):
+                  </td>
+                  <td className="border border-gray-300"></td>
+                  <td className="border border-gray-300 px-2 text-right font-bold text-blue-900 font-mono text-[10px]">
+                    $ {totalDebits.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="border border-gray-300 px-2 text-right font-bold text-red-900 font-mono text-[10px]">
+                    $ {totalCredits.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       )}
