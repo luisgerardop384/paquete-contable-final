@@ -55,66 +55,66 @@ export default function App() {
       <div className="bg-white text-black min-h-screen p-0 m-0 print-pages-canvas select-none">
         
         {/* Page 1: Cover Page */}
-        <div className="w-full relative flex justify-center items-center print-portrait print-portada-hoja-unica bg-white" style={{ pageBreakAfter: 'always', breakAfter: 'page' }}>
+        <div className="w-full relative flex justify-center items-center print-portrait print-portada-hoja-unica bg-white">
           <CompanyProfileTab />
         </div>
 
         {/* Page 2: Libro Diario */}
-        <div className="print-page-break p-12 print-landscape" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+        <div className="print-page-break p-12 print-landscape">
           <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
             <ExcelHeader currentTab="Diario" />
           </div>
-          <div className="mt-4">
+          <div className="mt-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
             <JournalTab />
           </div>
         </div>
 
         {/* Page 3: Esquemas de Mayor */}
-        <div className="print-page-break p-12 print-landscape" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+        <div className="print-page-break p-12 print-landscape">
           <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
             <ExcelHeader currentTab="Mayor" />
           </div>
-          <div className="mt-4">
+          <div className="mt-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
             <LedgerTab />
           </div>
         </div>
 
         {/* Page 4: Balanza de Comprobación */}
-        <div className="print-page-break p-12 print-landscape" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+        <div className="print-page-break p-12 print-landscape">
           <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
             <ExcelHeader currentTab="Balanza" />
           </div>
-          <div className="mt-4">
+          <div className="mt-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
             <TrialBalanceTab />
           </div>
         </div>
 
         {/* Page 5: Estado de Costo de lo Vendido */}
-        <div className="print-page-break p-12 print-portrait" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+        <div className="print-page-break p-12 print-portrait">
           <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
             <ExcelHeader currentTab="ECoPyV" />
           </div>
-          <div className="mt-4">
+          <div className="mt-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
             <CostOfGoodsTab />
           </div>
         </div>
 
         {/* Page 6: Estado de Resultados */}
-        <div className="print-page-break p-12 print-portrait" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+        <div className="print-page-break p-12 print-portrait">
           <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
             <ExcelHeader currentTab="ERe" />
           </div>
-          <div className="mt-4">
+          <div className="mt-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
             <IncomeStatementTab />
           </div>
         </div>
 
         {/* Page 7: Balance General */}
-        <div className={`print-page-break p-12 ${balanceSheetFormat === 'Cuenta' ? 'print-landscape' : 'print-portrait'}`} style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+        <div className={`print-page-break p-12 ${balanceSheetFormat === 'Cuenta' ? 'print-landscape' : 'print-portrait'}`}>
           <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
             <ExcelHeader currentTab="ESFi" />
           </div>
-          <div className="mt-4">
+          <div className="mt-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
             <BalanceSheetTab />
           </div>
         </div>
@@ -123,59 +123,48 @@ export default function App() {
         {chunkedPolicies.map((chunk, chunkIdx) => (
           <div 
             key={`chunk-page-${chunkIdx}`} 
-            className="print-page-break p-6 print-portrait min-h-screen"
-            style={{ pageBreakAfter: 'always', breakAfter: 'page', pageBreakInside: 'avoid', breakInside: 'avoid' }}
+            className="print-page-break p-12 print-portrait flex flex-col justify-between min-h-[92vh]"
+            style={{ pageBreakAfter: 'always', breakAfter: 'page' }}
           >
-            {/* Encabezado de la sección de Pólizas para la hoja */}
-            <div className="mb-4 text-center border-b-2 border-slate-900 pb-1" style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
-              <h3 className="font-sans font-black text-[12px] uppercase tracking-widest text-gray-800">
-                ZITÁCUARO IMPORTACIONES, S.A. DE C.V.
-              </h3>
-              <p className="text-[9px] font-mono font-bold text-gray-500 uppercase">
-                Compendio de Pólizas del Periodo ─ Paquete Imprimible (Hoja {chunkIdx + 1})
-              </p>
-            </div>
-
-            {/* Cuadrícula de 2x2 fija para impresión */}
-            <div className="grid grid-cols-2 gap-4 w-full" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+            <div className="grid grid-cols-2 grid-rows-2 gap-4 h-[95vh] w-full">
               {chunk.map((pol) => {
                 const totalDebit = pol.movements.reduce((sum, mov) => sum + (mov.debit || 0), 0);
                 const totalCredit = pol.movements.reduce((sum, mov) => sum + (mov.credit || 0), 0);
                 return (
-                  <div key={`p-card-${pol.id}`} className="border border-gray-450 p-2 rounded flex flex-col justify-between bg-white text-[10px] shadow-sm min-h-[42vh]" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                  <div key={`p-card-${pol.id}`} className="border border-gray-300 p-2 rounded flex flex-col justify-between h-full bg-white text-[10px] shadow-sm">
                     <div>
                       {/* Micro header */}
                       <div className="flex justify-between items-start border-b border-gray-300 pb-1 mb-1">
                         <div>
-                          <h4 className="font-extrabold text-slate-900 leading-tight uppercase text-[8.5px]">
+                          <h4 className="font-extrabold text-slate-900 leading-tight uppercase text-[9px]">
                             ZITÁCUARO IMPORTACIONES
                           </h4>
-                          <span className="text-[7px] font-mono text-gray-400 block font-semibold">S.A. DE C.V.</span>
+                          <span className="text-[7.5px] font-mono text-gray-400 block font-semibold">S.A. DE C.V.</span>
                         </div>
                         <div className="text-right">
-                          <span className="font-bold text-slate-800 bg-slate-100 px-1 py-0.2 rounded border border-gray-200 uppercase font-mono text-[7px]">
+                          <span className="font-bold text-slate-800 bg-slate-100 px-1 py-0.2 rounded border border-gray-200 uppercase font-mono text-[7.5px]">
                             POL: {pol.type ? pol.type.toUpperCase() : 'DIARIO'} - {pol.number}
                           </span>
-                          <p className="text-[7px] text-gray-400 font-mono mt-0.5">{pol.date}</p>
+                          <p className="text-[7.5px] text-gray-400 font-mono mt-0.5">{pol.date}</p>
                         </div>
                       </div>
 
                       {/* Concept detail */}
-                      <div className="mb-1.5 bg-slate-50 border border-gray-150 p-1 rounded-sm text-[7px] leading-tight text-gray-700">
-                        <span className="font-extrabold text-gray-400 uppercase text-[6px] block font-bold">Concepto:</span>
+                      <div className="mb-1.5 bg-slate-50 border border-gray-150 p-1 rounded-sm text-[7.5px] leading-tight text-gray-700">
+                        <span className="font-extrabold text-gray-400 uppercase text-[6.5px] block font-bold">Concepto:</span>
                         <span className="font-semibold block truncate max-w-full" title={pol.concept}>
                           {pol.concept || 'Concepto no especificado'}
                         </span>
                       </div>
 
                       {/* Compact Movements Table */}
-                      <table className="w-full border-collapse border border-gray-200 text-[7px] font-sans">
+                      <table className="w-full border-collapse border border-gray-200 text-[7.5px] font-sans">
                         <thead>
-                          <tr className="bg-slate-100 border-b border-gray-200 text-gray-500 font-mono text-[6px] uppercase tracking-wide">
-                            <th className="px-1 py-0.5 text-center border-r border-gray-200 font-bold w-10">Clave</th>
+                          <tr className="bg-slate-100 border-b border-gray-200 text-gray-500 font-mono text-[6.5px] uppercase tracking-wide">
+                            <th className="px-1 py-0.5 text-center border-r border-gray-200 font-bold w-12">Clave</th>
                             <th className="px-1 py-0.5 text-left border-r border-gray-200 font-bold">Cuenta - Registro</th>
-                            <th className="px-1 py-0.5 text-right border-r border-gray-200 font-bold w-12">Debe ($)</th>
-                            <th className="px-1 py-0.5 text-right font-bold w-12">Haber ($)</th>
+                            <th className="px-1 py-0.5 text-right border-r border-gray-200 font-bold w-14">Debe ($)</th>
+                            <th className="px-1 py-0.5 text-right font-bold w-14">Haber ($)</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -185,11 +174,11 @@ export default function App() {
                             return (
                               <React.Fragment key={mIdx}>
                                 {/* Parent Account row */}
-                                <tr className="border-b border-gray-150 text-slate-800 h-4">
-                                  <td className="border-r border-gray-200 text-center font-mono py-0.2 text-[6.5px] text-gray-500 font-semibold">
+                                <tr className="border-b border-gray-150 text-slate-800 h-5">
+                                  <td className="border-r border-gray-200 text-center font-mono py-0.2 text-[7px] text-gray-500 font-semibold">
                                     {mov.accountCode}
                                   </td>
-                                  <td className="border-r border-gray-200 px-1 font-bold truncate max-w-[110px] text-slate-800">
+                                  <td className="border-r border-gray-200 px-1 font-bold truncate max-w-[120px] text-slate-800">
                                     {acctName}
                                   </td>
                                   <td className="border-r border-gray-200 px-1 text-right font-mono text-blue-900 font-bold">
@@ -205,17 +194,17 @@ export default function App() {
                                   const foundSub = subaccounts.find((s) => s.code === mov.subaccountCode && s.parentCode === mov.accountCode);
                                   const subName = foundSub ? foundSub.name : 'Subcuenta Detalle';
                                   return (
-                                    <tr className="border-b border-gray-100 text-gray-400 italic text-[6.5px] h-3">
+                                    <tr className="border-b border-gray-100 text-gray-400 italic text-[7px] h-4">
                                       <td className="border-r border-gray-200 text-center font-mono">
                                         {mov.subaccountCode}
                                       </td>
-                                      <td className="border-r border-gray-200 px-1 truncate max-w-[110px] pl-2 font-normal text-gray-500">
+                                      <td className="border-r border-gray-200 px-1 truncate max-w-[120px] pl-2 font-normal text-gray-500">
                                         ↪ {subName}
                                       </td>
-                                      <td className="border-r border-gray-200 px-1 text-right font-mono text-[6px]">
+                                      <td className="border-r border-gray-200 px-1 text-right font-mono text-[6.5px]">
                                         {mov.debit ? `$${mov.debit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : ''}
                                       </td>
-                                      <td className="px-1 text-right font-mono text-[6px]">
+                                      <td className="px-1 text-right font-mono text-[6.5px]">
                                         {mov.credit ? `$${mov.credit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : ''}
                                       </td>
                                     </tr>
@@ -225,14 +214,14 @@ export default function App() {
                             );
                           })}
                           {/* Equal Sums Row */}
-                          <tr className="bg-slate-50 border-t border-gray-300 font-extrabold h-4 text-[6.5px] text-slate-900">
-                            <td colSpan={2} className="px-1 text-right border-r border-gray-200 text-slate-650 font-mono uppercase font-bold text-[5.5px]">
+                          <tr className="bg-slate-50 border-t border-gray-300 font-extrabold h-5 text-[7px] text-slate-900">
+                            <td colSpan={2} className="px-1 text-right border-r border-gray-200 text-slate-650 font-mono uppercase font-bold text-[6px]">
                               Sumas:
                             </td>
-                            <td className="border-r border-gray-200 px-1 text-right text-blue-950 font-mono font-black text-[7px]">
+                            <td className="border-r border-gray-200 px-1 text-right text-blue-950 font-mono font-black text-[7.5px]">
                               ${totalDebit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                             </td>
-                            <td className="px-1 text-right text-red-950 font-mono font-black text-[7px]">
+                            <td className="px-1 text-right text-red-950 font-mono font-black text-[7.5px]">
                               ${totalCredit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                             </td>
                           </tr>
@@ -241,29 +230,29 @@ export default function App() {
                     </div>
 
                     {/* Signatures Footer */}
-                    <div className="grid grid-cols-3 gap-1 text-[5.5px] text-center border-t border-gray-200 pt-1 mt-2 font-sans w-full">
+                    <div className="grid grid-cols-3 gap-1 text-[6px] text-center border-t border-gray-200 pt-1 mt-1 font-sans">
                       <div>
-                        <div className="border-b border-gray-200 h-1.5 mx-auto max-w-[35px]"></div>
-                        <span className="text-gray-400 block font-bold uppercase text-[4.5px]">Elaboró</span>
+                        <div className="border-b border-gray-200 h-2 mx-auto max-w-[40px]"></div>
+                        <span className="text-gray-400 block font-bold uppercase text-[5px]">Elaboró</span>
                         <span className="text-slate-800 font-extrabold block truncate">L.C. Luis Gerardo Perez</span>
                       </div>
                       <div>
-                        <div className="border-b border-gray-200 h-1.5 mx-auto max-w-[35px]"></div>
-                        <span className="text-gray-400 block font-bold uppercase text-[4.5px]">Revisó</span>
+                        <div className="border-b border-gray-200 h-2 mx-auto max-w-[40px]"></div>
+                        <span className="text-gray-400 block font-bold uppercase text-[5px]">Revisó</span>
                         <span className="text-slate-800 font-extrabold block truncate">L.C. Gerardo Pérez</span>
                       </div>
                       <div>
-                        <div className="border-b border-gray-200 h-1.5 mx-auto max-w-[35px]"></div>
-                        <span className="text-gray-400 block font-bold uppercase text-[4.5px]">Autorizó</span>
+                        <div className="border-b border-gray-200 h-2 mx-auto max-w-[40px]"></div>
+                        <span className="text-gray-400 block font-bold uppercase text-[5px]">Autorizó</span>
                         <span className="text-slate-800 font-extrabold block truncate text-slate-705">Dir. Finanzas</span>
                       </div>
                     </div>
                   </div>
                 );
               })}
-              {/* Fill remaining empty cells */}
+              {/* Fill remaining empty cells if chunk.length < 4 to preserve layout cells size if needed */}
               {chunk.length < 4 && Array.from({ length: 4 - chunk.length }).map((_, emptyIdx) => (
-                <div key={`empty-cell-${emptyIdx}`} className="border border-dashed border-gray-200 p-2 rounded bg-slate-50/20 min-h-[42vh]" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}></div>
+                <div key={`empty-cell-${emptyIdx}`} className="border border-dashed border-gray-200 p-2 rounded h-full bg-slate-50/20"></div>
               ))}
             </div>
           </div>
@@ -360,6 +349,7 @@ export default function App() {
 
         {/* Floating Utilities Controls */}
         <div className="flex items-center gap-3 py-2 shrink-0">
+          {/* Lápiz Contable floating panel toggler */}
           <button
             onClick={() => setScratchpadOpen(!isScratchpadOpen)}
             className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-gray-700 text-[11px] font-sans font-bold py-1.5 px-3 border border-gray-200 hover:border-gray-300 transition cursor-pointer rounded-lg shadow-sm h-8"
@@ -370,6 +360,7 @@ export default function App() {
             <span>Lápiz Contable</span>
           </button>
 
+          {/* Core window.print PDF exporter */}
           <button
             onClick={handlePrint}
             className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-750 text-white text-[11px] font-sans font-extrabold py-1.5 px-4 shadow-sm hover:shadow-md transition duration-150 cursor-pointer rounded-lg h-8 border border-emerald-700"
@@ -384,19 +375,26 @@ export default function App() {
 
       {/* Main ledger canvas document */}
       <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8 pb-16 printable-area select-none">
+        
+        {/* The general layout is extremely polished under the "Estudio Contable Ejecutivo" guidelines */}
         <div className="bg-white border border-gray-200 p-6 md:p-10 shadow-lg rounded-2xl excel-container min-h-[600px] flex flex-col justify-start">
+          
+          {/* Unified dynamic institutional letterhead ONLY printed on financial statement sheets */}
           {activeTab !== 'Portada' && activeTab !== 'Polizas' && (
             <ExcelHeader currentTab={activeTab} />
           )}
 
+          {/* Active sheet view panel */}
           <div className="mt-2 transition duration-200" id="worksheet-window">
             {renderActiveGrid()}
           </div>
         </div>
       </main>
 
+      {/* Floating mathematical calculator scratchpad panel */}
       <Scratchpad />
 
+      {/* SUTIL FOOTER TAG DECK (NO-PRINT): Placed at the bottom edge as a secondary visual spreadsheet tabs ribbon */}
       <footer className="no-print bg-white border-t border-gray-200 select-none pb-1">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-2 text-[10.5px] text-gray-400 font-mono">
           <div className="flex items-center gap-1.5">

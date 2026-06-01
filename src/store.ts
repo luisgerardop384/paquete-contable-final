@@ -1,7 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- */
+ */ 
 
 import { create } from 'zustand';
 import { Account, Subaccount, Policy, CompanyHeader, TabType, Movement } from './types';
