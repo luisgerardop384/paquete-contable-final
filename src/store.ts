@@ -25,7 +25,7 @@ interface AccountingState {
   
   // Custom Expense Subaccounts
   subaccounts: Subaccount[];
-  addSubaccount: (parentCode: string, name: string) => void;
+  addSubaccount: (arg1: string | Subaccount, name?: string) => void;
   deleteSubaccount: (code: string) => void;
   
   // Ledger/Policy state
@@ -44,6 +44,7 @@ interface AccountingState {
   
   // Standard Accounts list (Read-only reference)
   accounts: Account[];
+  addAccount: (newAccount: Account) => void;
 }
 
 const DEFAULT_ACCOUNTS: Account[] = [
@@ -224,6 +225,7 @@ export const useAccountingStore = create<AccountingState>((set) => {
 
   const initialHeader = getStored<CompanyHeader>('header', DEFAULT_COMPANY_HEADER);
   const initialPolicies = getStored<Policy[]>('policies', DEMO_POLICIES);
+  const initialAccounts = getStored<Account[]>('accounts', DEFAULT_ACCOUNTS);
   const initialSubaccounts = getStored<Subaccount[]>('subaccounts', DEFAULT_SUBACCOUNTS);
   const initialScratchpadText = getStored<string>('scratchpad', '/* Bloque de Notas y Lápiz Contable */\n// Realiza cálculos aritméticos sencillos rápido\n800000 - 8500 - 12000 = 779500\n150000 * 0.10 = 15000\n\n');
   const initialBalanceSheetFormat = getStored<'Reporte' | 'Cuenta'>('balanceSheetFormat', 'Cuenta');
@@ -249,16 +251,24 @@ export const useAccountingStore = create<AccountingState>((set) => {
     }),
     
     subaccounts: initialSubaccounts,
-    addSubaccount: (parentCode, name) => set((state) => {
-      // Calculate a unique code under parentCode: parentCode + .XX
-      const siblings = state.subaccounts.filter(s => s.parentCode === parentCode);
-      const nextNum = siblings.length + 1;
-      const formattedNum = nextNum < 10 ? `0${nextNum}` : `${nextNum}`;
-      const code = `${parentCode}.${formattedNum}`;
-      
-      const next = [...state.subaccounts, { code, name, parentCode }];
-      saveStored('subaccounts', next);
-      return { subaccounts: next };
+    addSubaccount: (arg1, name) => set((state) => {
+      if (typeof arg1 === 'object') {
+        const next = [...state.subaccounts, arg1];
+        saveStored('subaccounts', next);
+        return { subaccounts: next };
+      } else {
+        const parentCode = arg1;
+        const subName = name || '';
+        // Calculate a unique code under parentCode: parentCode + .XX
+        const siblings = state.subaccounts.filter(s => s.parentCode === parentCode);
+        const nextNum = siblings.length + 1;
+        const formattedNum = nextNum < 10 ? `0${nextNum}` : `${nextNum}`;
+        const code = `${parentCode}.${formattedNum}`;
+        
+        const next = [...state.subaccounts, { code, name: subName, parentCode }];
+        saveStored('subaccounts', next);
+        return { subaccounts: next };
+      }
     }),
     deleteSubaccount: (code) => set((state) => {
       const next = state.subaccounts.filter(s => s.code !== code);
@@ -299,6 +309,11 @@ export const useAccountingStore = create<AccountingState>((set) => {
     isScratchpadOpen: false,
     setScratchpadOpen: (open) => set({ isScratchpadOpen: open }),
     
-    accounts: DEFAULT_ACCOUNTS
+    accounts: initialAccounts,
+    addAccount: (newAccount) => set((state) => {
+      const next = [...state.accounts, newAccount];
+      saveStored('accounts', next);
+      return { accounts: next };
+    })
   };
 });
