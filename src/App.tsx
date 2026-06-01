@@ -17,7 +17,7 @@ import IncomeStatementTab from './components/IncomeStatementTab';
 import BalanceSheetTab from './components/BalanceSheetTab';
 import CatalogueTab from './components/CatalogueTab';
 import Scratchpad from './components/Scratchpad';
-import { Printer, Calculator, Eye, Briefcase } from 'lucide-react';
+import { Printer, Calculator, FileSpreadsheet, Eye, ChevronRight, Briefcase } from 'lucide-react';
 
 export default function App() {
   const { 
@@ -27,9 +27,9 @@ export default function App() {
     isScratchpadOpen, 
     setScratchpadOpen,
     isPrintingAll,
-    policies = [],
-    accounts = [],
-    subaccounts = [],
+    policies,
+    accounts,
+    subaccounts,
     balanceSheetFormat
   } = useAccountingStore();
 
@@ -45,6 +45,7 @@ export default function App() {
 
   // If we are compiler-sequencing all sheets as an integrated binder
   if (isPrintingAll) {
+    // Group policies by 4
     const chunkedPolicies = [];
     for (let i = 0; i < sortedPolicies.length; i += 4) {
       chunkedPolicies.push(sortedPolicies.slice(i, i + 4));
@@ -132,6 +133,7 @@ export default function App() {
                 return (
                   <div key={`p-card-${pol.id}`} className="border border-gray-300 p-2 rounded flex flex-col justify-between h-full bg-white text-[10px] shadow-sm">
                     <div>
+                      {/* Micro header */}
                       <div className="flex justify-between items-start border-b border-gray-300 pb-1 mb-1">
                         <div>
                           <h4 className="font-extrabold text-slate-900 leading-tight uppercase text-[9px]">
@@ -147,6 +149,7 @@ export default function App() {
                         </div>
                       </div>
 
+                      {/* Concept detail */}
                       <div className="mb-1.5 bg-slate-50 border border-gray-150 p-1 rounded-sm text-[7.5px] leading-tight text-gray-700">
                         <span className="font-extrabold text-gray-400 uppercase text-[6.5px] block font-bold">Concepto:</span>
                         <span className="font-semibold block truncate max-w-full" title={pol.concept}>
@@ -154,6 +157,7 @@ export default function App() {
                         </span>
                       </div>
 
+                      {/* Compact Movements Table */}
                       <table className="w-full border-collapse border border-gray-200 text-[7.5px] font-sans">
                         <thead>
                           <tr className="bg-slate-100 border-b border-gray-200 text-gray-500 font-mono text-[6.5px] uppercase tracking-wide">
@@ -169,6 +173,7 @@ export default function App() {
                             const acctName = foundAcct ? foundAcct.name : 'Cuenta Auxiliar';
                             return (
                               <React.Fragment key={mIdx}>
+                                {/* Parent Account row */}
                                 <tr className="border-b border-gray-150 text-slate-800 h-5">
                                   <td className="border-r border-gray-200 text-center font-mono py-0.2 text-[7px] text-gray-500 font-semibold">
                                     {mov.accountCode}
@@ -184,6 +189,7 @@ export default function App() {
                                   </td>
                                 </tr>
 
+                                {/* Subaccount row if specified */}
                                 {mov.subaccountCode && (() => {
                                   const foundSub = subaccounts.find((s) => s.code === mov.subaccountCode && s.parentCode === mov.accountCode);
                                   const subName = foundSub ? foundSub.name : 'Subcuenta Detalle';
@@ -207,6 +213,7 @@ export default function App() {
                               </React.Fragment>
                             );
                           })}
+                          {/* Equal Sums Row */}
                           <tr className="bg-slate-50 border-t border-gray-300 font-extrabold h-5 text-[7px] text-slate-900">
                             <td colSpan={2} className="px-1 text-right border-r border-gray-200 text-slate-650 font-mono uppercase font-bold text-[6px]">
                               Sumas:
@@ -222,6 +229,7 @@ export default function App() {
                       </table>
                     </div>
 
+                    {/* Signatures Footer */}
                     <div className="grid grid-cols-3 gap-1 text-[6px] text-center border-t border-gray-200 pt-1 mt-1 font-sans">
                       <div>
                         <div className="border-b border-gray-200 h-2 mx-auto max-w-[40px]"></div>
@@ -242,6 +250,7 @@ export default function App() {
                   </div>
                 );
               })}
+              {/* Fill remaining empty cells if chunk.length < 4 to preserve layout cells size if needed */}
               {chunk.length < 4 && Array.from({ length: 4 - chunk.length }).map((_, emptyIdx) => (
                 <div key={`empty-cell-${emptyIdx}`} className="border border-dashed border-gray-200 p-2 rounded h-full bg-slate-50/20"></div>
               ))}
@@ -253,6 +262,7 @@ export default function App() {
     );
   }
 
+  // Render active sheet grid according to chosen executive tab selection
   const renderActiveGrid = () => {
     switch (activeTab) {
       case 'Portada':
@@ -278,6 +288,7 @@ export default function App() {
     }
   };
 
+  // Sutil top navigation highlights styling
   const getNavBtnStyles = (tab: TabType) => {
     const isActive = activeTab === tab;
     const base = "relative px-3 py-3 text-[11px] font-sans font-extrabold tracking-wider uppercase transition-all duration-200 cursor-pointer select-none whitespace-nowrap ";
@@ -290,17 +301,22 @@ export default function App() {
 
   return (
     <div className="min-h-screen text-[#111111] flex flex-col bg-slate-50" id="main-frame">
+      
+      {/* 1. SUTIL TOP NAVIGATION BAR (NO-PRINT): High elegance compact header */}
       <header className="no-print bg-white border-b border-gray-200 w-full flex flex-col md:flex-row justify-between items-center px-6 md:px-10 py-1 shadow-sm sticky top-0 z-40 select-none">
+        
+        {/* Brand label & Workspace Metadata */}
         <div className="flex items-center gap-2 py-2 truncate max-w-[300px]">
           <Briefcase className="text-emerald-600 hover:scale-105 transition" size={16} />
-          <h2 className="font-sans font-black text-[12px] uppercase tracking-widest text-gray-800 truncate" title={companyHeader?.companyName}>
-            {companyHeader?.companyName || 'Estudio Contable'}
+          <h2 className="font-sans font-black text-[12px] uppercase tracking-widest text-gray-800 truncate" title={companyHeader.companyName}>
+            {companyHeader.companyName || 'Estudio Contable'}
           </h2>
           <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.2 rounded font-medium font-mono border border-gray-150">
             Perpetuos
           </span>
         </div>
 
+        {/* Horizontal Navigation Buttons List */}
         <nav className="flex items-center overflow-x-auto max-w-full scrollbar-none gap-1 pl-4">
           <button onClick={() => setActiveTab('Portada')} className={getNavBtnStyles('Portada')} id="btn-nav-portada">
             [Portada]
@@ -331,20 +347,25 @@ export default function App() {
           </button>
         </nav>
 
+        {/* Floating Utilities Controls */}
         <div className="flex items-center gap-3 py-2 shrink-0">
+          {/* Lápiz Contable floating panel toggler */}
           <button
             onClick={() => setScratchpadOpen(!isScratchpadOpen)}
             className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-gray-700 text-[11px] font-sans font-bold py-1.5 px-3 border border-gray-200 hover:border-gray-300 transition cursor-pointer rounded-lg shadow-sm h-8"
             id="btn-toggle-scratchpad"
+            title="Desplegar bloc de notas aritméticas coadyuvantes"
           >
             <Calculator size={13} className="text-gray-500" />
             <span>Lápiz Contable</span>
           </button>
 
+          {/* Core window.print PDF exporter */}
           <button
             onClick={handlePrint}
             className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-750 text-white text-[11px] font-sans font-extrabold py-1.5 px-4 shadow-sm hover:shadow-md transition duration-150 cursor-pointer rounded-lg h-8 border border-emerald-700"
             id="btn-print-pdf"
+            title="Exportar Reporte a PDF en formato Oficial CARTA"
           >
             <Printer size={13} />
             <span>PDF Exportar</span>
@@ -352,20 +373,28 @@ export default function App() {
         </div>
       </header>
 
+      {/* Main ledger canvas document */}
       <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8 pb-16 printable-area select-none">
+        
+        {/* The general layout is extremely polished under the "Estudio Contable Ejecutivo" guidelines */}
         <div className="bg-white border border-gray-200 p-6 md:p-10 shadow-lg rounded-2xl excel-container min-h-[600px] flex flex-col justify-start">
+          
+          {/* Unified dynamic institutional letterhead ONLY printed on financial statement sheets */}
           {activeTab !== 'Portada' && activeTab !== 'Polizas' && (
             <ExcelHeader currentTab={activeTab} />
           )}
 
+          {/* Active sheet view panel */}
           <div className="mt-2 transition duration-200" id="worksheet-window">
             {renderActiveGrid()}
           </div>
         </div>
       </main>
 
+      {/* Floating mathematical calculator scratchpad panel */}
       <Scratchpad />
 
+      {/* SUTIL FOOTER TAG DECK (NO-PRINT): Placed at the bottom edge as a secondary visual spreadsheet tabs ribbon */}
       <footer className="no-print bg-white border-t border-gray-200 select-none pb-1">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-2 text-[10.5px] text-gray-400 font-mono">
           <div className="flex items-center gap-1.5">
