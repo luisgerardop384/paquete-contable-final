@@ -121,7 +121,11 @@ export default function App() {
 
         {/* Page 8+: Sección de Pólizas ordenadas de 4 por hoja */}
         {chunkedPolicies.map((chunk, chunkIdx) => (
-          <div key={`chunk-page-${chunkIdx}`} className="print-page-break p-12 print-portrait flex flex-col justify-between min-h-[92vh] page-break-after-always">
+          <div 
+            key={`chunk-page-${chunkIdx}`} 
+            className="print-page-break p-12 print-portrait flex flex-col justify-between min-h-[92vh]"
+            style={{ pageBreakAfter: 'always', breakAfter: 'page' }}
+          >
             <div className="grid grid-cols-2 grid-rows-2 gap-4 h-[95vh] w-full">
               {chunk.map((pol) => {
                 const totalDebit = pol.movements.reduce((sum, mov) => sum + (mov.debit || 0), 0);
