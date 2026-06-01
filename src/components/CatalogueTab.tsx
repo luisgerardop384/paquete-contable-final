@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAccountingStore } from '../store';
 
 export default function CatalogueTab() {
-  const { accounts, subaccounts, addAccount, addSubaccount } = useAccountingStore();
+  const { accounts = [], subaccounts = [], addAccount, addSubaccount } = useAccountingStore();
   
   const [accountCode, setAccountCode] = useState('');
   const [accountName, setAccountName] = useState('');
@@ -17,13 +17,15 @@ export default function CatalogueTab() {
     if (!accountCode || !accountName) return alert('Por favor llena todos los campos.');
     if (accounts.some(a => a.code === accountCode)) return alert('Esa clave ya existe.');
 
-    addAccount({
-      code: accountCode,
-      name: accountName.toUpperCase(),
-      type: accountType
-    });
-    setAccountCode('');
-    setAccountName('');
+    if (typeof addAccount === 'function') {
+      addAccount({
+        code: accountCode,
+        name: accountName.toUpperCase(),
+        type: accountType
+      });
+      setAccountCode('');
+      setAccountName('');
+    }
   };
 
   const handleAddSubaccount = (e: React.FormEvent) => {
@@ -33,26 +35,26 @@ export default function CatalogueTab() {
       return alert('Esa subcuenta ya existe para esta cuenta padre.');
     }
 
-  // @ts-ignore
-  if (typeof addSubaccount === 'function') {
-    addSubaccount({
-      code: subCode,
-      parentCode: parentCode,
-      name: subName.toUpperCase()
-    });
-  } else {
-    alert('Error: La función addSubaccount no está vinculada en el store.');
-  }
-
-    setSubCode('');
-    setSubName('');
+    if (typeof addSubaccount === 'function') {
+      addSubaccount({
+        code: subCode,
+        parentCode: parentCode,
+        name: subName.toUpperCase()
+      });
+      setSubCode('');
+      setSubName('');
+    } else {
+      alert('Error: La función addSubaccount no está vinculada.');
+    }
   };
 
   return (
     <div className="space-y-6 text-xs font-sans">
-      <div className="no-print grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 border border-gray-200 rounded-xlADA">
+      
+      {/* Sección Interactiva (Formularios) */}
+      <div className="no-print grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 border border-gray-200 rounded-xl">
         
-        {/* Formulario Cuenta */}
+        {/* Formulario Cuenta de Mayor */}
         <form onSubmit={handleAddAccount} className="bg-white p-4 border border-gray-200 rounded-lg shadow-sm">
           <div className="border-b border-gray-150 pb-2 mb-3 text-slate-800 font-bold uppercase">
             <span>➕ Agregar Cuenta de Mayor</span>
@@ -111,7 +113,7 @@ export default function CatalogueTab() {
         </form>
       </div>
 
-      {/* Tabla */}
+      {/* Tabla del Catálogo */}
       <div className="border border-gray-300 bg-white rounded-xl shadow-sm overflow-hidden">
         <table className="w-full border-collapse text-left text-slate-800">
           <thead>
@@ -148,6 +150,7 @@ export default function CatalogueTab() {
           </tbody>
         </table>
       </div>
+
     </div>
   );
 }
