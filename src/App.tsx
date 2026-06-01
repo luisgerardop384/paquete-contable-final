@@ -46,57 +46,135 @@ export default function App() {
   // If we are compiler-sequencing all sheets as an integrated binder
   if (isPrintingAll) {
     return (
-      <div className="bg-white text-black min-h-screen p-0 m-0 print-pages-canvas select-none">
+      <div className="bg-white text-black min-h-screen p-0 m-0 select-none print-canvas-binder">
         
-        {/* Page 1: Cover Page */}
-        <div className="w-full relative flex justify-center items-center print-portrait print-portada-hoja-unica bg-white">
+        {/* INYECTOR DE REGLAS CSS EXCLUSIVAS PARA IMPRESIÓN PDF PERFECTA */}
+        <style dangerouslySetInnerHTML={{__html: `
+          @media print {
+            body { background: white; color: black; }
+            .no-print { display: none !important; }
+            
+            /* 1. PORTADA: Hoja única forzada */
+            .print-portada-hoja-unica {
+              page-break-before: always;
+              page-break-after: always !important;
+              break-after: page !important;
+              height: 99vh !important;
+              display: flex !important;
+              flex-direction: column !important;
+              justify-content: center !important;
+              align-items: center !important;
+            }
+
+            /* Forzar saltos de hoja limpios entre secciones principales */
+            .print-page-break {
+              page-break-before: always !important;
+              break-before: page !important;
+              page-break-inside: avoid !important;
+              margin: 0 !important;
+              padding: 2.5rem !important;
+            }
+
+            /* Configuración de Orientación Dinámica */
+            .print-portrait { page: portrait; }
+            .print-landscape { page: landscape; }
+
+            @page print-portrait { size: letter portrait; margin: 1.5cm; }
+            @page print-landscape { size: letter landscape; margin: 1.5cm; }
+
+            /* Evitar textos huerfanos */
+            h2, h3, h4, .excel-header-block {
+              page-break-after: avoid !important;
+              break-after: avoid !important;
+            }
+
+            /* 2. OPTIMIZACIÓN LIBRO DIARIO (Se controla en JournalTab, pero blindamos el contenedor) */
+            table { page-break-inside: auto !important; width: 100% !important; border-collapse: collapse !important; }
+            tr { page-break-inside: avoid !important; page-break-after: auto !important; }
+            thead { display: table-header-group !important; }
+
+            /* 3. OPTIMIZACIÓN ESQUEMAS DE MAYOR: 3 Cuentas en T por Fila */
+            .ledger-grid-print-container {
+              display: grid !important;
+              grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+              gap: 16px !important;
+              width: 100% !important;
+              page-break-inside: auto !important;
+            }
+            .ledger-grid-print-container > div {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+              margin-bottom: 8px !important;
+            }
+
+            /* 5. SECCIÓN PÓLIZAS: Una por hoja impecable con firmas abajo */
+            .print-poliza-page {
+              page-break-before: always !important;
+              break-before: page !important;
+              page-break-after: always !important;
+              break-after: page !important;
+              height: 94vh !important;
+              display: flex !important;
+              flex-direction: column !important;
+              justify-content: justify !important;
+            }
+            .print-poliza-firmas {
+              margin-top: auto !important;
+              padding-top: 1.5rem !important;
+              border-top: 1px solid #cbd5e1 !important;
+            }
+          }
+        `}} />
+
+        {/* Page 1: Cover Page (Portada) */}
+        <div className="w-full relative print-portrait print-portada-hoja-unica bg-white">
           <CompanyProfileTab />
         </div>
 
         {/* Page 2: Libro Diario */}
-        <div className="print-page-break p-12 print-landscape">
+        <div className="print-page-break print-landscape">
           <ExcelHeader currentTab="Diario" />
-          <div className="mt-6">
+          <div className="mt-4">
             <JournalTab />
           </div>
         </div>
 
-        {/* Page 3: Esquemas de Mayor */}
-        <div className="print-page-break p-12 print-landscape">
+        {/* Page 3: Esquemas de Mayor (Libro Mayor) */}
+        <div className="print-page-break print-landscape">
           <ExcelHeader currentTab="Mayor" />
-          <div className="mt-6">
+          <div className="mt-4 ledger-grid-print-container">
             <LedgerTab />
           </div>
         </div>
 
         {/* Page 4: Balanza de Comprobación */}
-        <div className="print-page-break p-12 print-landscape">
+        <div className="print-page-break print-landscape">
           <ExcelHeader currentTab="Balanza" />
-          <div className="mt-6">
+          <div className="mt-4">
             <TrialBalanceTab />
           </div>
         </div>
 
         {/* Page 5: Estado de Costo de lo Vendido */}
-        <div className="print-page-break p-12 print-portrait">
+        <div className="print-page-break print-portrait">
           <ExcelHeader currentTab="ECoPyV" />
-          <div className="mt-6">
+          <div className="mt-4">
             <CostOfGoodsTab />
           </div>
         </div>
 
         {/* Page 6: Estado de Resultados */}
-        <div className="print-page-break p-12 print-portrait">
+        <div className="print-page-break print-portrait">
           <ExcelHeader currentTab="ERe" />
-          <div className="mt-6">
+          <div className="mt-4">
             <IncomeStatementTab />
           </div>
         </div>
 
         {/* Page 7: Balance General */}
-        <div className={`print-page-break p-12 ${balanceSheetFormat === 'Cuenta' ? 'print-landscape' : 'print-portrait'}`}>
+        <div className={`print-page-break ${balanceSheetFormat === 'Cuenta' ? 'print-landscape' : 'print-portrait'}`}>
           <ExcelHeader currentTab="ESFi" />
-          <div className="mt-6">
+          <div className="mt-4">
             <BalanceSheetTab />
           </div>
         </div>
@@ -106,7 +184,7 @@ export default function App() {
           const totalDebit = pol.movements.reduce((sum, mov) => sum + (mov.debit || 0), 0);
           const totalCredit = pol.movements.reduce((sum, mov) => sum + (mov.credit || 0), 0);
           return (
-            <div key={`p-form-${pol.id}`} className="print-page-break p-12 print-portrait flex flex-col justify-between min-h-[92vh]">
+            <div key={`p-form-${pol.id}`} className="print-poliza-page p-12 print-portrait">
               <div>
                 {/* Micro mini letterhead */}
                 <div className="flex justify-between items-start border-b-2 border-slate-800 pb-3 mb-5">
@@ -213,18 +291,18 @@ export default function App() {
                 </table>
               </div>
 
-              {/* Recuadros de firmas */}
-              <div className="grid grid-cols-3 gap-6 text-[10px] text-center font-sans mt-auto border-t border-gray-300 pt-5">
+              {/* Recuadros de firmas físicas al calce forzados al fondo */}
+              <div className="grid grid-cols-3 gap-6 text-[10px] text-center font-sans print-poliza-firmas">
                 <div>
                   <div className="border-b border-gray-300 mx-auto max-w-[130px] h-9"></div>
                   <span className="font-extrabold text-slate-500 block uppercase mt-1 tracking-wider text-[8.5px]">Elaboró</span>
-                  <span className="text-slate-800 font-black text-[11px] block text-[11px]">L.C. Luis Gerardo Perez</span>
+                  <span className="text-slate-800 font-black text-[11px] block">L.C. Luis Gerardo Perez</span>
                   <span className="text-[9.5px] text-gray-400 font-mono italic">Auxiliar Contable</span>
                 </div>
                 <div>
                   <div className="border-b border-gray-300 mx-auto max-w-[130px] h-9"></div>
                   <span className="font-extrabold text-slate-500 block uppercase mt-1 tracking-wider text-[8.5px]">Revisó</span>
-                  <span className="text-slate-800 font-black text-[11px] block text-[11px]">L.C. Gerardo Pérez</span>
+                  <span className="text-slate-800 font-black text-[11px] block">L.C. Gerardo Pérez</span>
                   <span className="text-[9.5px] text-gray-400 font-mono italic">Contralor General</span>
                 </div>
                 <div>
@@ -258,132 +336,3 @@ export default function App() {
       case 'ECoPyV':
         return <CostOfGoodsTab />;
       case 'ERe':
-        return <IncomeStatementTab />;
-      case 'ESFi':
-        return <BalanceSheetTab />;
-      case 'Catalogo':
-        return <CatalogueTab />;
-      default:
-        return <CompanyProfileTab />;
-    }
-  };
-
-  // Sutil top navigation highlights styling
-  const getNavBtnStyles = (tab: TabType) => {
-    const isActive = activeTab === tab;
-    const base = "relative px-3 py-3 text-[11px] font-sans font-extrabold tracking-wider uppercase transition-all duration-200 cursor-pointer select-none whitespace-nowrap ";
-    
-    if (isActive) {
-      return base + "text-emerald-700 font-extrabold border-b-[3px] border-emerald-600";
-    }
-    return base + "text-gray-500 hover:text-emerald-600 border-b-[3px] border-transparent";
-  };
-
-  return (
-    <div className="min-h-screen text-[#111111] flex flex-col bg-slate-50" id="main-frame">
-      
-      {/* 1. SUTIL TOP NAVIGATION BAR (NO-PRINT): High elegance compact header */}
-      <header className="no-print bg-white border-b border-gray-200 w-full flex flex-col md:flex-row justify-between items-center px-6 md:px-10 py-1 shadow-sm sticky top-0 z-40 select-none">
-        
-        {/* Brand label & Workspace Metadata */}
-        <div className="flex items-center gap-2 py-2 truncate max-w-[300px]">
-          <Briefcase className="text-emerald-600 hover:scale-105 transition" size={16} />
-          <h2 className="font-sans font-black text-[12px] uppercase tracking-widest text-gray-800 truncate" title={companyHeader.companyName}>
-            {companyHeader.companyName || 'Estudio Contable'}
-          </h2>
-          <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.2 rounded font-medium font-mono border border-gray-150">
-            Perpetuos
-          </span>
-        </div>
-
-        {/* Horizontal Navigation Buttons List */}
-        <nav className="flex items-center overflow-x-auto max-w-full scrollbar-none gap-1 pl-4">
-          <button onClick={() => setActiveTab('Portada')} className={getNavBtnStyles('Portada')} id="btn-nav-portada">
-            [Portada]
-          </button>
-          <button onClick={() => setActiveTab('Polizas')} className={getNavBtnStyles('Polizas')} id="btn-nav-polizas">
-            [Gestor de Pólizas]
-          </button>
-          <button onClick={() => setActiveTab('Diario')} className={getNavBtnStyles('Diario')} id="btn-nav-diario">
-            [Libro Diario]
-          </button>
-          <button onClick={() => setActiveTab('Mayor')} className={getNavBtnStyles('Mayor')} id="btn-nav-mayor">
-            [Esquemas de Mayor]
-          </button>
-          <button onClick={() => setActiveTab('Balanza')} className={getNavBtnStyles('Balanza')} id="btn-nav-balanza">
-            [Balanza de Comprobación]
-          </button>
-          <button onClick={() => setActiveTab('ECoPyV')} className={getNavBtnStyles('ECoPyV')} id="btn-nav-ecopyv">
-            [Costo de Ventas]
-          </button>
-          <button onClick={() => setActiveTab('ERe')} className={getNavBtnStyles('ERe')} id="btn-nav-ere">
-            [Estado de Resultados]
-          </button>
-          <button onClick={() => setActiveTab('ESFi')} className={getNavBtnStyles('ESFi')} id="btn-nav-esfi">
-            [Balance General]
-          </button>
-          <button onClick={() => setActiveTab('Catalogo')} className={getNavBtnStyles('Catalogo')} id="btn-nav-catalogo">
-            [Catálogo]
-          </button>
-        </nav>
-
-        {/* Floating Utilities Controls */}
-        <div className="flex items-center gap-3 py-2 shrink-0">
-          {/* Lápiz Contable floating panel toggler */}
-          <button
-            onClick={() => setScratchpadOpen(!isScratchpadOpen)}
-            className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-gray-700 text-[11px] font-sans font-bold py-1.5 px-3 border border-gray-200 hover:border-gray-300 transition cursor-pointer rounded-lg shadow-sm h-8"
-            id="btn-toggle-scratchpad"
-            title="Desplegar bloc de notas aritméticas coadyuvantes"
-          >
-            <Calculator size={13} className="text-gray-500" />
-            <span>Lápiz Contable</span>
-          </button>
-
-          {/* Core window.print PDF exporter */}
-          <button
-            onClick={handlePrint}
-            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-750 text-white text-[11px] font-sans font-extrabold py-1.5 px-4 shadow-sm hover:shadow-md transition duration-150 cursor-pointer rounded-lg h-8 border border-emerald-700"
-            id="btn-print-pdf"
-            title="Exportar Reporte a PDF en formato Oficial CARTA"
-          >
-            <Printer size={13} />
-            <span>PDF Exportar</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Main ledger canvas document */}
-      <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8 pb-16 printable-area select-none">
-        
-        {/* The general layout is extremely polished under the "Estudio Contable Ejecutivo" guidelines */}
-        <div className="bg-white border border-gray-200 p-6 md:p-10 shadow-lg rounded-2xl excel-container min-h-[600px] flex flex-col justify-start">
-          
-          {/* Unified dynamic institutional letterhead ONLY printed on financial statement sheets */}
-          {activeTab !== 'Portada' && activeTab !== 'Polizas' && (
-            <ExcelHeader currentTab={activeTab} />
-          )}
-
-          {/* Active sheet view panel */}
-          <div className="mt-2 transition duration-200" id="worksheet-window">
-            {renderActiveGrid()}
-          </div>
-        </div>
-      </main>
-
-      {/* Floating mathematical calculator scratchpad panel */}
-      <Scratchpad />
-
-      {/* SUTIL FOOTER TAG DECK (NO-PRINT): Placed at the bottom edge as a secondary visual spreadsheet tabs ribbon */}
-      <footer className="no-print bg-white border-t border-gray-200 select-none pb-1">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-2 text-[10.5px] text-gray-400 font-mono">
-          <div className="flex items-center gap-1.5">
-            <Eye size={12} className="text-gray-400" />
-            <span>Expediente Contable Digital Oficial ─ Zitácuaro Importaciones, S.A.</span>
-          </div>
-          <span>Cifras Sin IVA (Inventarios Perpetuos)</span>
-        </div>
-      </footer>
-    </div>
-  );
-}
