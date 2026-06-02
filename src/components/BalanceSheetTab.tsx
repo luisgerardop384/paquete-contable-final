@@ -19,21 +19,26 @@ export default function BalanceSheetTab() {
   };
 
   // Compute normal debit balance or credit balance safely
-  const getBalance = (code: string) => {
+  const getBalance = (codeOrCodes: string | string[]) => {
     let debits = 0;
     let credits = 0;
+    const codes = Array.isArray(codeOrCodes) ? codeOrCodes : [codeOrCodes];
 
     policies.forEach((pol) => {
       pol.movements.forEach((mov) => {
-        if (mov.accountCode === code) {
+        if (codes.includes(mov.accountCode)) {
           debits += mov.debit || 0;
           credits += mov.credit || 0;
         }
       });
     });
 
-    const creditNormal = ['6-D', '7-D', '8-D', '9-D', '20', '21', '22', '30', '31', '40', '41', '60'];
-    if (creditNormal.includes(code)) {
+    const creditNormal = [
+      '6-D', '7-D', '8-D', '9-D', '20', '201.00', '21', '203.00', '22',
+      '30', '301.00', '31', '40', '401.00', '41', '760.00', '760', '60', '354.00', '354', '301'
+    ];
+    const isCreditNormal = codes.some(c => creditNormal.includes(c));
+    if (isCreditNormal) {
       return credits - debits; // Acreedora normal
     } else {
       return debits - credits; // Deudora normal
@@ -41,61 +46,45 @@ export default function BalanceSheetTab() {
   };
 
   // 1. Assets (Activo Circulante)
-  const caja = getBalance('1');
-  const bancos = getBalance('2');
-  const almacen = getBalance('3');
-  const clientes = getBalance('4');
-  const docCobrar = getBalance('5');
-  const papeleria = getBalance('10');
+  const caja = getBalance(['101.00']);
+  const bancos = getBalance(['102.00']);
+  const almacen = getBalance(['120.00']);
+  const clientes = getBalance(['104.00']);
+  const docCobrar = getBalance(['106.00']);
 
-  const totalCirculante = caja + bancos + almacen + clientes + docCobrar + papeleria;
+  const totalCirculante = caja + bancos + almacen + clientes + docCobrar;
 
   // 2. Assets (Activo No Circulante - Fijo)
-  const edificios = getBalance('6');
-  const depEdificios = getBalance('6-D'); // Acreedora (subtracted positive amount)
-  const netEdificios = edificios - depEdificios;
+  const terrenos = getBalance(['151.00']);
+  const transporte = getBalance(['160.00']); // Equipo de Reparto
 
-  const mobiliario = getBalance('7');
-  const depMobiliario = getBalance('7-D');
-  const netMobiliario = mobiliario - depMobiliario;
-
-  const computo = getBalance('8');
-  const depComputo = getBalance('8-D');
-  const netComputo = computo - depComputo;
-
-  const transporte = getBalance('9');
-  const depTransporte = getBalance('9-D');
-  const netTransporte = transporte - depTransporte;
-
-  const totalNoCirculante = netEdificios + netMobiliario + netComputo + netTransporte;
+  const totalNoCirculante = terrenos + transporte;
   const totalActivo = totalCirculante + totalNoCirculante;
 
   // 3. Liabilities (Pasivo Circulante/Corto Plazo)
-  const proveedores = getBalance('20');
-  const docPagar = getBalance('21');
-  const contribuciones = getBalance('22');
+  const proveedores = getBalance(['201.00']);
+  const docPagar = getBalance(['203.00']);
 
-  const totalPasivo = proveedores + docPagar + contribuciones;
+  const totalPasivo = proveedores + docPagar;
 
   // 4. Utility / Income Statement Result (Net gain/loss)
-  const sales = getBalance('40');
-  const costOfSales = getBalance('50');
-  const adminExpenses = getBalance('51');
-  const sellingExpenses = getBalance('52');
-  const depExpenses = getBalance('53');
-  const financialIncomes = getBalance('41');
+  const sales = getBalance(['401.00']);
+  const costOfSales = getBalance(['501.00']);
+  const adminExpenses = getBalance(['602.00']);
+  const sellingExpenses = getBalance(['601.00']);
+  const financialIncomes = getBalance(['760.00']);
 
-  const netIncomeOfPeriod = (sales + financialIncomes) - (costOfSales + adminExpenses + sellingExpenses + depExpenses);
+  const explicitUtility = getBalance(['354.00']);
+  const netIncomeOfPeriod = explicitUtility !== 0 ? explicitUtility : (sales + financialIncomes) - (costOfSales + adminExpenses + sellingExpenses);
 
   // 5. Capital Contable
-  const capitalSocial = getBalance('30');
-  const utilidadesAnteriores = getBalance('31');
+  const capitalSocial = getBalance(['301.00']);
 
   // Net Capital in Report format is calculated mathematically as Direct Residual: Activo - Pasivo
   const computedCapitalReportMode = totalActivo - totalPasivo;
 
   // School Account Rule: SÍ se incluye el renglón de Utilidad de forma explícita en Capital
-  const totalCapitalCuentaMode = capitalSocial + utilidadesAnteriores + netIncomeOfPeriod;
+  const totalCapitalCuentaMode = capitalSocial + netIncomeOfPeriod;
   const totalPasivoMasCapitalCuentaMode = totalPasivo + totalCapitalCuentaMode;
 
   // Helper formatting for currency values
@@ -126,29 +115,17 @@ export default function BalanceSheetTab() {
     
     // Activo Circulante Header
     list.push({ name: '🟢 ACTIVO CIRCULANTE (C.P.)', isHeader: true });
-    list.push({ code: '1', name: 'Caja', value: caja });
-    list.push({ code: '2', name: 'Bancos', value: bancos });
-    list.push({ code: '3', name: 'Almacén', value: almacen });
-    list.push({ code: '4', name: 'Clientes', value: clientes });
-    list.push({ code: '5', name: 'Documentos por Cobrar', value: docCobrar });
-    list.push({ code: '10', name: 'Papelería y Útiles', value: papeleria, hasLineCut: true });
+    list.push({ code: '101.00', name: 'Caja', value: caja });
+    list.push({ code: '102.00', name: 'Bancos', value: bancos });
+    list.push({ code: '120.00', name: 'Almacén', value: almacen });
+    list.push({ code: '104.00', name: 'Clientes', value: clientes });
+    list.push({ code: '106.00', name: 'Documentos por Cobrar', value: docCobrar, hasLineCut: true });
     list.push({ name: 'Suma Activo Circulante', isSubtotal: true, subtotal: totalCirculante });
 
     // Activo No Circulante Header
     list.push({ name: '🏬 ACTIVO NO CIRCULANTE (Fijo)', isHeader: true });
-    
-    list.push({ code: '6', name: 'Edificios', netAssetParent: edificios });
-    list.push({ code: '6-D', name: '(-) Depreciación Edificios', depreciationVal: depEdificios, value: netEdificios });
-    
-    list.push({ code: '7', name: 'Mobiliario y Equipo', netAssetParent: mobiliario });
-    list.push({ code: '7-D', name: '(-) Depreciación Mobiliario', depreciationVal: depMobiliario, value: netMobiliario });
-    
-    list.push({ code: '8', name: 'Equipo de Cómputo', netAssetParent: computo });
-    list.push({ code: '8-D', name: '(-) Depreciación Cómputo', depreciationVal: depComputo, value: netComputo });
-    
-    list.push({ code: '9', name: 'Equipo de Transporte', netAssetParent: transporte });
-    list.push({ code: '9-D', name: '(-) Depreciación Transporte', depreciationVal: depTransporte, value: netTransporte, hasLineCut: true });
-    
+    list.push({ code: '151.00', name: 'Terrenos', value: terrenos });
+    list.push({ code: '160.00', name: 'Equipo de Reparto', value: transporte, hasLineCut: true });
     list.push({ name: 'Suma Activo No Circulante', isSubtotal: true, subtotal: totalNoCirculante });
 
     return list;
@@ -159,16 +136,14 @@ export default function BalanceSheetTab() {
     
     // Pasivo Corto Plazo Header
     list.push({ name: '🔴 PASIVO A CORTO PLAZO', isHeader: true });
-    list.push({ code: '20', name: 'Proveedores', value: proveedores });
-    list.push({ code: '21', name: 'Documentos por Pagar comercial', value: docPagar });
-    list.push({ code: '22', name: 'Impuestos y Contribuciones', value: contribuciones, hasLineCut: true });
+    list.push({ code: '201.00', name: 'Proveedores', value: proveedores });
+    list.push({ code: '203.00', name: 'Documentos por Pagar comercial', value: docPagar, hasLineCut: true });
     list.push({ name: 'Suma del Pasivo Corto Plazo', isSubtotal: true, subtotal: totalPasivo });
 
     // Capital Contable Header
     list.push({ name: '🔵 CAPITAL CONTABLE', isHeader: true });
-    list.push({ code: '30', name: 'Capital Social', value: capitalSocial });
-    list.push({ code: '31', name: 'Utilidades de Ejercicios Anteriores', value: utilidadesAnteriores });
-    list.push({ code: '✓', name: 'Utilidad Neta del Ejercicio (de ERe)', value: netIncomeOfPeriod, hasLineCut: true });
+    list.push({ code: '301.00', name: 'Capital Social', value: capitalSocial });
+    list.push({ code: '354.00', name: 'Utilidad Neta del Ejercicio (de ERe)', value: netIncomeOfPeriod, hasLineCut: true });
     list.push({ name: 'Suma del Capital Contable', isSubtotal: true, subtotal: totalCapitalCuentaMode });
 
     return list;
@@ -309,16 +284,7 @@ export default function BalanceSheetTab() {
               <tr className="hover:bg-slate-50/20 h-7 text-gray-800">
                 <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">5</td>
                 <td className="border-r border-gray-220 pl-12 font-bold text-gray-700">Documentos por Cobrar</td>
-                <td className="border-r border-gray-150 px-4 text-right font-mono">{formatCellAmountVal(docCobrar)}</td>
-                <td className="border-r border-gray-150"></td>
-                <td></td>
-              </tr>
-
-              <tr className="hover:bg-slate-50/20 h-7 text-gray-800">
-                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">6</td>
-                <td className="border-r border-gray-220 pl-12 font-bold text-gray-700">Papelería y Útiles</td>
-                {/* Visual operation cut inside numeric cell strictly */}
-                <td className="border-r border-gray-150 px-4 text-right font-mono border-b border-black">{formatCellAmountVal(papeleria)}</td>
+                <td className="border-r border-gray-150 px-4 text-right font-mono border-b border-black">{formatCellAmountVal(docCobrar)}</td>
                 <td className="border-r border-gray-150"></td>
                 <td></td>
               </tr>
@@ -328,7 +294,6 @@ export default function BalanceSheetTab() {
                 <td className="border-r border-gray-150"></td>
                 <td className="border-r border-gray-220 pl-8 font-extrabold uppercase text-gray-400 tracking-wider">Suma Activo Circulante:</td>
                 <td className="border-r border-gray-150"></td>
-                {/* Shows with "$" strictly as it is the first number in column Subtotal */}
                 <td className="border-r border-gray-150 px-4 text-right font-mono text-slate-900 font-extrabold">$ {formatCellAmountVal(totalCirculante)}</td>
                 <td></td>
               </tr>
@@ -339,65 +304,19 @@ export default function BalanceSheetTab() {
                 <td colSpan={4} className="px-5 italic font-bold text-gray-550 pl-8 h-7">Activo No Circulante (Fijo e Inversiones):</td>
               </tr>
 
+              <tr className="hover:bg-slate-50/20 h-7 text-gray-800">
+                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">6</td>
+                <td className="border-r border-gray-220 pl-12 font-bold text-gray-750">Terrenos</td>
+                <td className="border-r border-gray-150 px-4 text-right font-mono">$ {formatCellAmountVal(terrenos)}</td>
+                <td className="border-r border-gray-150"></td>
+                <td></td>
+              </tr>
+
               <tr className="hover:bg-slate-50/20 h-7">
                 <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">7</td>
-                <td className="border-r border-gray-220 pl-12 font-bold text-gray-750">Edificios (6)</td>
-                {/* Starts column 1 again, gets "$" */}
-                <td className="border-r border-gray-150 px-4 text-right font-mono">$ {formatCellAmountVal(edificios)}</td>
+                <td className="border-r border-gray-220 pl-12 font-bold text-gray-750">Equipo de Reparto</td>
+                <td className="border-r border-gray-150 px-4 text-right font-mono border-b border-black">{formatCellAmountVal(transporte)}</td>
                 <td className="border-r border-gray-150"></td>
-                <td></td>
-              </tr>
-              <tr className="hover:bg-slate-50/20 h-7 text-red-900 italic text-[11.5px]">
-                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-300 text-center select-none">7.1</td>
-                <td className="border-r border-gray-220 pl-16 font-medium">(-) Depreciación Acumulada Edificios</td>
-                <td className="border-r border-gray-150 px-4 text-right font-mono italic border-b border-black">-{formatCellAmountVal(depEdificios)}</td>
-                <td className="border-r border-gray-150 px-4 text-right font-mono text-gray-700 font-semibold bg-emerald-50/5">{formatCellAmountVal(netEdificios)}</td>
-                <td></td>
-              </tr>
-
-              <tr className="hover:bg-slate-50/20 h-7">
-                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">8</td>
-                <td className="border-r border-gray-220 pl-12 font-bold text-gray-750">Mobiliario y Equipo (7)</td>
-                <td className="border-r border-gray-150 px-4 text-right font-mono">{formatCellAmountVal(mobiliario)}</td>
-                <td className="border-r border-gray-150"></td>
-                <td></td>
-              </tr>
-              <tr className="hover:bg-slate-50/20 h-7 text-red-900 italic text-[11.5px]">
-                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-300 text-center select-none">8.1</td>
-                <td className="border-r border-gray-220 pl-16 font-medium">(-) Depreciación Acumulada Mobiliario</td>
-                <td className="border-r border-gray-150 px-4 text-right font-mono italic border-b border-black">-{formatCellAmountVal(depMobiliario)}</td>
-                <td className="border-r border-gray-150 px-4 text-right font-mono text-gray-700 font-semibold bg-emerald-50/5">{formatCellAmountVal(netMobiliario)}</td>
-                <td></td>
-              </tr>
-
-              <tr className="hover:bg-slate-50/20 h-7">
-                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">9</td>
-                <td className="border-r border-gray-220 pl-12 font-bold text-gray-750">Equipo de Cómputo (8)</td>
-                <td className="border-r border-gray-150 px-4 text-right font-mono">{formatCellAmountVal(computo)}</td>
-                <td className="border-r border-gray-150"></td>
-                <td></td>
-              </tr>
-              <tr className="hover:bg-slate-50/20 h-7 text-red-900 italic text-[11.5px]">
-                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-300 text-center select-none">9.1</td>
-                <td className="border-r border-gray-220 pl-16 font-medium">(-) Depreciación Acumulada Cómputo</td>
-                <td className="border-r border-gray-150 px-4 text-right font-mono italic border-b border-black">-{formatCellAmountVal(depComputo)}</td>
-                <td className="border-r border-gray-150 px-4 text-right font-mono text-gray-700 font-semibold bg-emerald-50/5">{formatCellAmountVal(netComputo)}</td>
-                <td></td>
-              </tr>
-
-              <tr className="hover:bg-slate-50/20 h-7">
-                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">10</td>
-                <td className="border-r border-gray-220 pl-12 font-bold text-gray-750">Equipo de Transporte (9)</td>
-                <td className="border-r border-gray-150 px-4 text-right font-mono">{formatCellAmountVal(transporte)}</td>
-                <td className="border-r border-gray-150"></td>
-                <td></td>
-              </tr>
-              <tr className="hover:bg-slate-50/20 h-7 text-red-900 italic text-[11.5px]">
-                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-300 text-center select-none">10.1</td>
-                <td className="border-r border-gray-220 pl-16 font-medium">(-) Depreciación Acumulada Transporte</td>
-                {/* Visual operation line cut inside TD only */}
-                <td className="border-r border-gray-150 px-4 text-right font-mono italic border-b border-black">-{formatCellAmountVal(depTransporte)}</td>
-                <td className="border-r border-gray-150 px-4 text-right font-mono text-gray-700 font-semibold bg-emerald-50/5 border-b border-black">{formatCellAmountVal(netTransporte)}</td>
                 <td></td>
               </tr>
 
@@ -416,7 +335,6 @@ export default function BalanceSheetTab() {
                 <td className="border-r border-gray-220 pl-6 text-[#111111] font-mono uppercase tracking-widest text-[11.5px]">SUMA TOTAL DEL ACTIVO:</td>
                 <td className="border-r border-gray-150"></td>
                 <td className="border-r border-gray-150"></td>
-                {/* Shows with "$" as first of column 3 (Total) */}
                 <td className="px-4 text-right font-mono text-[13.5px] text-blue-950 font-black border-b border-black bg-blue-100/5">$ {formatCellAmountVal(totalActivo)}</td>
               </tr>
 
@@ -427,27 +345,18 @@ export default function BalanceSheetTab() {
               </tr>
 
               <tr className="hover:bg-slate-50/20 h-7">
-                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">11</td>
+                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">8</td>
                 <td className="border-r border-gray-220 pl-12 font-bold text-gray-700">Proveedores</td>
-                {/* New section column 2 starts, gets "$" */}
                 <td className="border-r border-gray-150"></td>
                 <td className="border-r border-gray-150 px-4 text-right font-mono text-red-900 font-bold">$ {formatCellAmountVal(proveedores)}</td>
                 <td></td>
               </tr>
 
               <tr className="hover:bg-slate-50/20 h-7">
-                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">12</td>
+                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">9</td>
                 <td className="border-r border-gray-220 pl-12 font-bold text-gray-700">Documentos por Pagar Comercial</td>
                 <td className="border-r border-gray-150"></td>
-                <td className="border-r border-gray-150 px-4 text-right font-mono text-red-900">{formatCellAmountVal(docPagar)}</td>
-                <td></td>
-              </tr>
-
-              <tr className="hover:bg-slate-50/20 h-7">
-                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">13</td>
-                <td className="border-r border-gray-220 pl-12 font-bold text-gray-700">Impuestos y Contribuciones por Pagar</td>
-                <td className="border-r border-gray-150"></td>
-                <td className="border-r border-gray-150 px-4 text-right font-mono text-red-900 border-b border-black">{formatCellAmountVal(contribuciones)}</td>
+                <td className="border-r border-gray-150 px-4 text-right font-mono text-red-900 border-b border-black">{formatCellAmountVal(docPagar)}</td>
                 <td></td>
               </tr>
 
@@ -457,7 +366,6 @@ export default function BalanceSheetTab() {
                 <td className="border-r border-gray-220 pl-6 text-[#111111] font-mono uppercase tracking-widest text-[11.5px]">SUMA TOTAL DEL PASIVO:</td>
                 <td className="border-r border-gray-150"></td>
                 <td className="border-r border-gray-150"></td>
-                {/* First subtraction term in total, gets "$" */}
                 <td className="px-4 text-right font-mono text-[13.5px] text-red-950 font-black border-b border-black bg-red-100/5">$ {formatCellAmountVal(totalPasivo)}</td>
               </tr>
 
@@ -468,26 +376,17 @@ export default function BalanceSheetTab() {
               </tr>
 
               <tr className="h-7 text-gray-800">
-                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">14</td>
+                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">10</td>
                 <td className="border-r border-gray-220 pl-12 font-bold text-gray-700">Capital Social</td>
                 <td className="border-r border-gray-150"></td>
                 <td className="border-r border-gray-150 px-4 text-right font-mono text-cyan-950 font-bold">$ {formatCellAmountVal(capitalSocial)}</td>
                 <td></td>
               </tr>
 
-              <tr className="h-7 text-gray-800">
-                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">15</td>
-                <td className="border-r border-gray-220 pl-12 font-bold text-gray-700">Utilidades de Ejercicios Anteriores</td>
-                <td className="border-r border-gray-150"></td>
-                <td className="border-r border-gray-150 px-4 text-right font-mono text-cyan-950">{formatCellAmountVal(utilidadesAnteriores)}</td>
-                <td></td>
-              </tr>
-
               <tr className="h-7 text-emerald-900">
-                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">16</td>
-                <td className="border-r border-gray-220 pl-12 italic font-bold">✓ Utilidad Neta del Periodo (de ERe)</td>
+                <td className="bg-slate-50/40 border-r border-gray-150 text-[9px] font-mono text-gray-400 text-center select-none">11</td>
+                <td className="border-r border-gray-220 pl-12 italic font-bold">✓ Utilidad Neta del Ejercicio (de ERe)</td>
                 <td className="border-r border-gray-150"></td>
-                {/* Visual operation cut inside this subtotal cell strictly */}
                 <td className="border-r border-gray-150 px-4 text-right font-mono text-emerald-950 border-b border-black">{formatCellAmountVal(netIncomeOfPeriod)}</td>
                 <td></td>
               </tr>
@@ -500,7 +399,6 @@ export default function BalanceSheetTab() {
                 </td>
                 <td className="border-r border-gray-150"></td>
                 <td className="border-r border-gray-150"></td>
-                {/* Double bottom line strictly on the total numeric cell of column 3 */}
                 <td className="px-4 text-right font-mono text-[14px] text-cyan-950 font-black bg-slate-100/10 border-b-[3.5px] border-double border-black">
                   $ {formatCellAmountVal(computedCapitalReportMode)}
                 </td>

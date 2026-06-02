@@ -45,218 +45,162 @@ export default function App() {
 
   // If we are compiler-sequencing all sheets as an integrated binder
   if (isPrintingAll) {
-    // Group policies by 4
-    const chunkedPolicies = [];
-    for (let i = 0; i < sortedPolicies.length; i += 4) {
-      chunkedPolicies.push(sortedPolicies.slice(i, i + 4));
-    }
+    const activeAccountCodes = new Set<string>();
+    policies.forEach((p) => {
+      p.movements.forEach((m) => {
+        activeAccountCodes.add(m.accountCode);
+        if (m.subaccountCode) {
+          activeAccountCodes.add(m.subaccountCode);
+        }
+      });
+    });
 
     return (
-      <div className="bg-white text-black min-h-screen p-0 m-0 print-pages-canvas select-none">
+      <div className="bg-white text-black min-h-screen p-0 m-0 select-none">
+        {/* Real-time Dynamic CSS Injector to perfectly fit and style the PDF binder */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          @media print {
+            body {
+              background: white !important;
+              color: black !important;
+              font-family: ui-sans-serif, system-ui, sans-serif !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .no-print {
+              display: none !important;
+            }
+            .print-page-break {
+              page-break-after: always !important;
+              break-after: page !important;
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+              margin: 0 !important;
+              padding: 10mm !important;
+              min-height: 100vh !important;
+              box-sizing: border-box !important;
+            }
+            table {
+              font-size: 8.5px !important;
+              width: 100% !important;
+              border-collapse: collapse !important;
+            }
+            th, td {
+              padding: 3px 5px !important;
+              line-height: 1.2 !important;
+            }
+            h2, h3, h4 {
+              margin-top: 4px !important;
+              margin-bottom: 4px !important;
+            }
+            /* Hide empty states and logs in print */
+            #scratchpad, .floating-calculator, button, nav, header, footer {
+              display: none !important;
+            }
+          }
+          @page {
+            size: portrait;
+            margin: 10mm;
+          }
+          .print-portrait {
+            page: portrait;
+          }
+          .print-landscape {
+            page: landscape;
+            size: landscape;
+          }
+        `}} />
         
-        {/* Page 1: Cover Page */}
-        <div className="w-full relative flex justify-center items-center print-portrait print-portada-hoja-unica bg-white">
-          <CompanyProfileTab />
+        {/* Page 1: Portada o Encabezado Ejecutivo */}
+        <div className="print-page-break print-portrait flex justify-center items-center h-screen">
+          <div className="w-full max-w-[800px]">
+            <CompanyProfileTab />
+          </div>
         </div>
 
-        {/* Page 2: Libro Diario */}
-        <div className="print-page-break p-12 print-landscape">
+        {/* Page 2: Catálogo de Cuentas */}
+        <div className="print-page-break print-portrait">
+          <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
+            <ExcelHeader currentTab="Catalogo" />
+          </div>
+          <div className="mt-6 text-slate-800">
+            <h3 className="text-sm font-sans font-extrabold text-slate-900 border-b border-gray-300 pb-2 mb-4 uppercase tracking-wider">
+              Catálogo de Cuentas en Ejercicio (Solo Cuentas con Movimiento)
+            </h3>
+            <table className="w-full border-collapse text-[9.5px] font-sans">
+              <thead>
+                <tr className="bg-slate-100 border-b border-gray-300 font-mono text-[8px] uppercase tracking-wider text-gray-500">
+                  <th className="border border-gray-200 px-3 py-1.5 text-left w-24">Código</th>
+                  <th className="border border-gray-200 px-3 py-1.5 text-left">Nombre de la Cuenta / Subcuenta</th>
+                  <th className="border border-gray-200 px-3 py-1.5 text-left w-36">Naturaleza / Nivel</th>
+                </tr>
+              </thead>
+              <tbody>
+                {accounts
+                  .filter(acct => activeAccountCodes.has(acct.code))
+                  .map((acct) => {
+                    const subs = subaccounts.filter(sub => sub.parentCode === acct.code && activeAccountCodes.has(sub.code));
+                    return (
+                      <React.Fragment key={acct.code}>
+                        <tr className="border font-semibold bg-white">
+                          <td className="border border-gray-200 px-3 py-1 font-mono text-slate-900 font-bold">{acct.code}</td>
+                          <td className="border border-gray-200 px-3 py-1 text-slate-900 font-extrabold">{acct.name}</td>
+                          <td className="border border-gray-200 px-3 py-1 text-gray-500 text-[8.5px] font-mono">{acct.type}</td>
+                        </tr>
+                        {subs.map((sub) => (
+                          <tr key={sub.code} className="border bg-slate-50/40 text-[8.5px]">
+                            <td className="border border-gray-200 px-3 py-0.5 font-mono text-gray-500 pl-6">{sub.code}</td>
+                            <td className="border border-gray-200 px-3 py-0.5 text-gray-600 pl-8 italic">↪ {sub.name}</td>
+                            <td className="border border-gray-200 px-3 py-0.5 text-gray-400 font-mono italic">Subcuenta</td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Page 3: Libro Diario */}
+        <div className="print-page-break print-landscape">
           <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
             <ExcelHeader currentTab="Diario" />
           </div>
-          <div className="mt-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+          <div className="mt-4" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
             <JournalTab />
           </div>
         </div>
 
-        {/* Page 3: Esquemas de Mayor */}
-        <div className="print-page-break p-12 print-landscape">
+        {/* Page 4: Esquemas de Mayor */}
+        <div className="print-page-break print-landscape">
           <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
             <ExcelHeader currentTab="Mayor" />
           </div>
-          <div className="mt-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+          <div className="mt-4" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
             <LedgerTab />
           </div>
         </div>
 
-        {/* Page 4: Balanza de Comprobación */}
-        <div className="print-page-break p-12 print-landscape">
-          <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
-            <ExcelHeader currentTab="Balanza" />
-          </div>
-          <div className="mt-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-            <TrialBalanceTab />
-          </div>
-        </div>
-
-        {/* Page 5: Estado de Costo de lo Vendido */}
-        <div className="print-page-break p-12 print-portrait">
-          <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
-            <ExcelHeader currentTab="ECoPyV" />
-          </div>
-          <div className="mt-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-            <CostOfGoodsTab />
-          </div>
-        </div>
-
-        {/* Page 6: Estado de Resultados */}
-        <div className="print-page-break p-12 print-portrait">
+        {/* Page 5: Estado de Resultados */}
+        <div className="print-page-break print-portrait">
           <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
             <ExcelHeader currentTab="ERe" />
           </div>
-          <div className="mt-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+          <div className="mt-4" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
             <IncomeStatementTab />
           </div>
         </div>
 
-        {/* Page 7: Balance General */}
-        <div className={`print-page-break p-12 ${balanceSheetFormat === 'Cuenta' ? 'print-landscape' : 'print-portrait'}`}>
+        {/* Page 6: Balance General */}
+        <div className={`print-page-break ${balanceSheetFormat === 'Cuenta' ? 'print-landscape' : 'print-portrait'}`}>
           <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
             <ExcelHeader currentTab="ESFi" />
           </div>
-          <div className="mt-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+          <div className="mt-4" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
             <BalanceSheetTab />
           </div>
         </div>
-
-        {/* Page 8+: Sección de Pólizas ordenadas de 4 por hoja */}
-        {chunkedPolicies.map((chunk, chunkIdx) => (
-          <div 
-            key={`chunk-page-${chunkIdx}`} 
-            className="print-page-break p-12 print-portrait flex flex-col justify-between min-h-[92vh]"
-            style={{ pageBreakAfter: 'always', breakAfter: 'page' }}
-          >
-            <div className="grid grid-cols-2 grid-rows-2 gap-4 h-[95vh] w-full">
-              {chunk.map((pol) => {
-                const totalDebit = pol.movements.reduce((sum, mov) => sum + (mov.debit || 0), 0);
-                const totalCredit = pol.movements.reduce((sum, mov) => sum + (mov.credit || 0), 0);
-                return (
-                  <div key={`p-card-${pol.id}`} className="border border-gray-300 p-2 rounded flex flex-col justify-between h-full bg-white text-[10px] shadow-sm">
-                    <div>
-                      {/* Micro header */}
-                      <div className="flex justify-between items-start border-b border-gray-300 pb-1 mb-1">
-                        <div>
-                          <h4 className="font-extrabold text-slate-900 leading-tight uppercase text-[9px]">
-                            ZITÁCUARO IMPORTACIONES
-                          </h4>
-                          <span className="text-[7.5px] font-mono text-gray-400 block font-semibold">S.A. DE C.V.</span>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-bold text-slate-800 bg-slate-100 px-1 py-0.2 rounded border border-gray-200 uppercase font-mono text-[7.5px]">
-                            POL: {pol.type ? pol.type.toUpperCase() : 'DIARIO'} - {pol.number}
-                          </span>
-                          <p className="text-[7.5px] text-gray-400 font-mono mt-0.5">{pol.date}</p>
-                        </div>
-                      </div>
-
-                      {/* Concept detail */}
-                      <div className="mb-1.5 bg-slate-50 border border-gray-150 p-1 rounded-sm text-[7.5px] leading-tight text-gray-700">
-                        <span className="font-extrabold text-gray-400 uppercase text-[6.5px] block font-bold">Concepto:</span>
-                        <span className="font-semibold block truncate max-w-full" title={pol.concept}>
-                          {pol.concept || 'Concepto no especificado'}
-                        </span>
-                      </div>
-
-                      {/* Compact Movements Table */}
-                      <table className="w-full border-collapse border border-gray-200 text-[7.5px] font-sans">
-                        <thead>
-                          <tr className="bg-slate-100 border-b border-gray-200 text-gray-500 font-mono text-[6.5px] uppercase tracking-wide">
-                            <th className="px-1 py-0.5 text-center border-r border-gray-200 font-bold w-12">Clave</th>
-                            <th className="px-1 py-0.5 text-left border-r border-gray-200 font-bold">Cuenta - Registro</th>
-                            <th className="px-1 py-0.5 text-right border-r border-gray-200 font-bold w-14">Debe ($)</th>
-                            <th className="px-1 py-0.5 text-right font-bold w-14">Haber ($)</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {pol.movements.map((mov, mIdx) => {
-                            const foundAcct = accounts.find((a) => a.code === mov.accountCode);
-                            const acctName = foundAcct ? foundAcct.name : 'Cuenta Auxiliar';
-                            return (
-                              <React.Fragment key={mIdx}>
-                                {/* Parent Account row */}
-                                <tr className="border-b border-gray-150 text-slate-800 h-5">
-                                  <td className="border-r border-gray-200 text-center font-mono py-0.2 text-[7px] text-gray-500 font-semibold">
-                                    {mov.accountCode}
-                                  </td>
-                                  <td className="border-r border-gray-200 px-1 font-bold truncate max-w-[120px] text-slate-800">
-                                    {acctName}
-                                  </td>
-                                  <td className="border-r border-gray-200 px-1 text-right font-mono text-blue-900 font-bold">
-                                    {mov.debit ? `$${mov.debit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : ''}
-                                  </td>
-                                  <td className="px-1 text-right font-mono text-red-900 font-bold">
-                                    {mov.credit ? `$${mov.credit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : ''}
-                                  </td>
-                                </tr>
-
-                                {/* Subaccount row if specified */}
-                                {mov.subaccountCode && (() => {
-                                  const foundSub = subaccounts.find((s) => s.code === mov.subaccountCode && s.parentCode === mov.accountCode);
-                                  const subName = foundSub ? foundSub.name : 'Subcuenta Detalle';
-                                  return (
-                                    <tr className="border-b border-gray-100 text-gray-400 italic text-[7px] h-4">
-                                      <td className="border-r border-gray-200 text-center font-mono">
-                                        {mov.subaccountCode}
-                                      </td>
-                                      <td className="border-r border-gray-200 px-1 truncate max-w-[120px] pl-2 font-normal text-gray-500">
-                                        ↪ {subName}
-                                      </td>
-                                      <td className="border-r border-gray-200 px-1 text-right font-mono text-[6.5px]">
-                                        {mov.debit ? `$${mov.debit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : ''}
-                                      </td>
-                                      <td className="px-1 text-right font-mono text-[6.5px]">
-                                        {mov.credit ? `$${mov.credit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : ''}
-                                      </td>
-                                    </tr>
-                                  );
-                                })()}
-                              </React.Fragment>
-                            );
-                          })}
-                          {/* Equal Sums Row */}
-                          <tr className="bg-slate-50 border-t border-gray-300 font-extrabold h-5 text-[7px] text-slate-900">
-                            <td colSpan={2} className="px-1 text-right border-r border-gray-200 text-slate-650 font-mono uppercase font-bold text-[6px]">
-                              Sumas:
-                            </td>
-                            <td className="border-r border-gray-200 px-1 text-right text-blue-950 font-mono font-black text-[7.5px]">
-                              ${totalDebit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-                            </td>
-                            <td className="px-1 text-right text-red-950 font-mono font-black text-[7.5px]">
-                              ${totalCredit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-
-                    {/* Signatures Footer */}
-                    <div className="grid grid-cols-3 gap-1 text-[6px] text-center border-t border-gray-200 pt-1 mt-1 font-sans">
-                      <div>
-                        <div className="border-b border-gray-200 h-2 mx-auto max-w-[40px]"></div>
-                        <span className="text-gray-400 block font-bold uppercase text-[5px]">Elaboró</span>
-                        <span className="text-slate-800 font-extrabold block truncate">L.C. Luis Gerardo Perez</span>
-                      </div>
-                      <div>
-                        <div className="border-b border-gray-200 h-2 mx-auto max-w-[40px]"></div>
-                        <span className="text-gray-400 block font-bold uppercase text-[5px]">Revisó</span>
-                        <span className="text-slate-800 font-extrabold block truncate">L.C. Gerardo Pérez</span>
-                      </div>
-                      <div>
-                        <div className="border-b border-gray-200 h-2 mx-auto max-w-[40px]"></div>
-                        <span className="text-gray-400 block font-bold uppercase text-[5px]">Autorizó</span>
-                        <span className="text-slate-800 font-extrabold block truncate text-slate-705">Dir. Finanzas</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-              {/* Fill remaining empty cells if chunk.length < 4 to preserve layout cells size if needed */}
-              {chunk.length < 4 && Array.from({ length: 4 - chunk.length }).map((_, emptyIdx) => (
-                <div key={`empty-cell-${emptyIdx}`} className="border border-dashed border-gray-200 p-2 rounded h-full bg-slate-50/20"></div>
-              ))}
-            </div>
-          </div>
-        ))}
 
       </div>
     );

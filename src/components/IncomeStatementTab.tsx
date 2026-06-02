@@ -11,13 +11,15 @@ export default function IncomeStatementTab() {
   const { policies, subaccounts } = useAccountingStore();
 
   // Helper to fetch net balance of an account
-  const getAccountNetBalance = (code: string) => {
+  const getAccountNetBalance = (codeOrCodes: string | string[], includeAdjustments: boolean = false) => {
     let debits = 0;
     let credits = 0;
+    const codes = Array.isArray(codeOrCodes) ? codeOrCodes : [codeOrCodes];
 
     policies.forEach((pol) => {
+      if (!includeAdjustments && pol.isAdjustment) return;
       pol.movements.forEach((mov) => {
-        if (mov.accountCode === code) {
+        if (codes.includes(mov.accountCode)) {
           debits += mov.debit || 0;
           credits += mov.credit || 0;
         }
@@ -25,8 +27,13 @@ export default function IncomeStatementTab() {
     });
 
     // Accounts have different normal balances
-    const normalDeudora = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '50', '51', '52', '53'];
-    if (normalDeudora.includes(code)) {
+    const normalDeudora = [
+      '1', '101.00', '2', '102.00', '3', '120.00', '4', '104.00', '5', '106.00',
+      '6', '7', '8', '9', '160.00', '151.00', '10', '50', '501.00', '51', '52', '53',
+      '601.00', '602.00', '601', '602'
+    ];
+    const isNormalDeudora = codes.some(c => normalDeudora.includes(c));
+    if (isNormalDeudora) {
       return debits - credits; // Debit normal balance
     } else {
       return credits - debits; // Credit normal balance
@@ -39,6 +46,7 @@ export default function IncomeStatementTab() {
     let credits = 0;
 
     policies.forEach((pol) => {
+      if (pol.isAdjustment) return;
       pol.movements.forEach((mov) => {
         if (mov.accountCode === parentCode && mov.subaccountCode === subCode) {
           debits += mov.debit || 0;
@@ -51,18 +59,18 @@ export default function IncomeStatementTab() {
   };
 
   // 1. Revenues
-  const sales = Math.max(0, getAccountNetBalance('40'));
+  const sales = Math.max(0, getAccountNetBalance(['40', '401.00'], false));
   
   // 2. Cost of sales
-  const costOfSales = Math.max(0, getAccountNetBalance('50'));
+  const costOfSales = Math.max(0, getAccountNetBalance(['50', '501.00'], false));
 
   // 3. Brute utility
   const grossProfit = sales - costOfSales;
 
   // 4. Operating Expenses
-  const adminExpenses = Math.max(0, getAccountNetBalance('51'));
-  const sellingExpenses = Math.max(0, getAccountNetBalance('52'));
-  const depreciationExpenses = Math.max(0, getAccountNetBalance('53'));
+  const adminExpenses = Math.max(0, getAccountNetBalance(['51', '602.00', '602'], false));
+  const sellingExpenses = Math.max(0, getAccountNetBalance(['52', '601.00', '601'], false));
+  const depreciationExpenses = Math.max(0, getAccountNetBalance('53', false));
 
   const totalOperatingExpenses = adminExpenses + sellingExpenses + depreciationExpenses;
 
@@ -70,10 +78,11 @@ export default function IncomeStatementTab() {
   const operatingProfit = grossProfit - totalOperatingExpenses;
 
   // 6. Other incomes / Financial products
-  const financialProducts = Math.max(0, getAccountNetBalance('41'));
+  const financialProducts = Math.max(0, getAccountNetBalance(['41', '760.00', '760'], false));
 
   // 7. Net Profit/Loss of Period
-  const netIncome = operatingProfit + financialProducts;
+  const explicitUtility = Math.max(0, getAccountNetBalance(['354.00', '354'], true));
+  const netIncome = explicitUtility > 0 ? explicitUtility : (operatingProfit + financialProducts);
 
   // Compile subaccount list details for 51 and 52
   const subs51 = subaccounts

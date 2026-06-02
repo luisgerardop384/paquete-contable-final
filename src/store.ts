@@ -48,41 +48,32 @@ interface AccountingState {
 }
 
 const DEFAULT_ACCOUNTS: Account[] = [
-  { code: '1', name: 'Caja', type: 'Deudora' },
-  { code: '2', name: 'Bancos', type: 'Deudora' },
-  { code: '3', name: 'Almacén', type: 'Deudora' },
-  { code: '4', name: 'Clientes', type: 'Deudora' },
-  { code: '5', name: 'Documentos por Cobrar', type: 'Deudora' },
-  { code: '6', name: 'Edificios', type: 'Deudora' },
-  { code: '6-D', name: 'Depreciación Acumulada de Edificios', type: 'Acreedora', isDepreciation: true, parentAssetCode: '6' },
-  { code: '7', name: 'Mobiliario y Equipo', type: 'Deudora' },
-  { code: '7-D', name: 'Depreciación Acumulada de Mobiliario', type: 'Acreedora', isDepreciation: true, parentAssetCode: '7' },
-  { code: '8', name: 'Equipo de Cómputo', type: 'Deudora' },
-  { code: '8-D', name: 'Depreciación Acumulada de Equipo de Cómputo', type: 'Acreedora', isDepreciation: true, parentAssetCode: '8' },
-  { code: '9', name: 'Equipo de Transporte', type: 'Deudora' },
-  { code: '9-D', name: 'Depreciación Acumulada de Equipo de Transporte', type: 'Acreedora', isDepreciation: true, parentAssetCode: '9' },
-  { code: '10', name: 'Papelería y Útiles', type: 'Deudora' },
-  { code: '20', name: 'Proveedores', type: 'Acreedora' },
-  { code: '21', name: 'Documentos por Pagar', type: 'Acreedora' },
-  { code: '22', name: 'Contribuciones por Pagar / Impuestos', type: 'Acreedora' },
-  { code: '30', name: 'Capital Social', type: 'Acreedora' },
-  { code: '31', name: 'Utilidades de Ejercicios Anteriores', type: 'Acreedora' },
-  { code: '40', name: 'Ventas', type: 'Acreedora' },
-  { code: '41', name: 'Productos Financieros / Otros Ingresos', type: 'Acreedora' },
-  { code: '50', name: 'Costo de Ventas', type: 'Deudora' },
-  { code: '51', name: 'Gastos de Administración', type: 'Deudora' },
-  { code: '52', name: 'Gastos de Venta y Distribución', type: 'Deudora' },
-  { code: '53', name: 'Gasto por Depreciación de Activos', type: 'Deudora' },
-  { code: '60', name: 'Pérdidas y Ganancias', type: 'Mixta' } // Temporary closing account
+  // Specific exercise accounts
+  { code: '101.00', name: 'Caja', type: 'Deudora' },
+  { code: '102.00', name: 'Bancos', type: 'Deudora' },
+  { code: '120.00', name: 'Almacén', type: 'Deudora' },
+  { code: '104.00', name: 'Clientes', type: 'Deudora' },
+  { code: '106.00', name: 'Documentos por Cobrar', type: 'Deudora' },
+  { code: '151.00', name: 'Terrenos', type: 'Deudora' },
+  { code: '160.00', name: 'Equipo de Reparto', type: 'Deudora' },
+  { code: '201.00', name: 'Proveedores', type: 'Acreedora' },
+  { code: '203.00', name: 'Documentos por Pagar', type: 'Acreedora' },
+  { code: '301.00', name: 'Capital Social', type: 'Acreedora' },
+  { code: '401.00', name: 'Ventas', type: 'Acreedora' },
+  { code: '760.00', name: 'Productos Financieros', type: 'Acreedora' },
+  { code: '501.00', name: 'Costo de Ventas', type: 'Deudora' },
+  { code: '601.00', name: 'Gastos de Venta y Distribución', type: 'Deudora' },
+  { code: '602.00', name: 'Gastos de Administración', type: 'Deudora' },
+  { code: '900.00', name: 'Pérdida y Ganancias', type: 'Mixta' },
+  { code: '354.00', name: 'Utilidad del Ejercicio', type: 'Acreedora' }
 ];
 
 const DEFAULT_SUBACCOUNTS: Subaccount[] = [
-  { code: '51.01', name: 'Renta de Oficinas', parentCode: '51' },
-  { code: '51.02', name: 'Sueldos y Salarios', parentCode: '51' },
-  { code: '51.03', name: 'Luz y Teléfono', parentCode: '51' },
-  { code: '52.01', name: 'Renta del Local Comercial', parentCode: '52' },
-  { code: '52.02', name: 'Comisiones', parentCode: '52' },
-  { code: '52.03', name: 'Propaganda y Publicidad', parentCode: '52' }
+  { code: '602.01', name: 'Renta de Oficinas', parentCode: '602.00' },
+  { code: '602.02', name: 'Sueldos y Salarios', parentCode: '602.00' },
+  { code: '602.03', name: 'Luz y Teléfono de Admin', parentCode: '602.00' },
+  { code: '601.01', name: 'Comisiones a Vendedores', parentCode: '601.00' },
+  { code: '601.02', name: 'Propaganda y Publicidad', parentCode: '601.00' }
 ];
 
 const DEFAULT_COMPANY_HEADER: CompanyHeader = {
@@ -90,119 +81,216 @@ const DEFAULT_COMPANY_HEADER: CompanyHeader = {
   companyName: 'ZITÁCUARO IMPORTACIONES, S.A. DE C.V.',
   rfc: 'ZIM-980415G34',
   address: 'Av. Revolución Sur #142, Col. Centro, C.P. 61500',
-  startDate: '2026-01-01',
-  endDate: '2026-12-31',
+  startDate: '2020-01-01',
+  endDate: '2020-12-31',
   area: 'Dirección de Finanzas y Contabilidad',
   cityCountry: 'Zitácuaro, Michoacán, México'
 };
 
-const DEMO_POLICIES: Policy[] = [
+const initialEntries = [
   {
-    id: 'p-1',
-    number: 'P-01',
-    date: '2026-01-02',
+    id: 'a1',
+    date: '2020-12-01',
     type: 'Diario',
-    concept: 'Apertura de saldos iniciales de la empresa',
-    reference: 'Esc. Pública 9821',
-    author: 'L.C. Gerardo Pérez',
-    isAdjustment: false,
-    movements: [
-      { accountCode: '1', debit: 50000, credit: null },
-      { accountCode: '2', debit: 800000, credit: null },
-      { accountCode: '3', debit: 450000, credit: null },
-      { accountCode: '4', debit: 120000, credit: null },
-      { accountCode: '6', debit: 1200000, credit: null },
-      { accountCode: '7', debit: 150000, credit: null },
-      { accountCode: '8', debit: 80000, credit: null },
-      { accountCode: '20', debit: null, credit: 300000 },
-      { accountCode: '30', debit: null, credit: 2550000 }
+    number: 1,
+    concept: 'REG. SALDOS INICIALES',
+    items: [
+      { accountCode: '101.00', accountName: 'CAJA', debit: 25000.00, credit: 0 },
+      { accountCode: '102.00', accountName: 'BANCOS', debit: 38500.00, credit: 0 },
+      { accountCode: '120.00', accountName: 'ALMACÉN', debit: 710750.00, credit: 0 },
+      { accountCode: '104.00', accountName: 'CLIENTES', debit: 12400.00, credit: 0 },
+      { accountCode: '106.00', accountName: 'DOCUMENTOS POR COBRAR', debit: 92640.00, credit: 0 },
+      { accountCode: '160.00', accountName: 'EQUIPO DE REPARTO', debit: 115000.00, credit: 0 },
+      { accountCode: '151.00', accountName: 'TERRENOS', debit: 500000.00, credit: 0 },
+      { accountCode: '201.00', accountName: 'PROVEEDORES', debit: 0, credit: 15680.00 },
+      { accountCode: '203.00', accountName: 'DOCUMENTOS POR PAGAR', debit: 0, credit: 142000.00 },
+      { accountCode: '301.00', accountName: 'CAPITAL SOCIAL', debit: 0, credit: 1336610.00 }
     ]
   },
   {
-    id: 'p-2',
-    number: 'P-02',
-    date: '2026-01-15',
+    id: 'a2',
+    date: '2020-12-03',
     type: 'Ingreso',
-    concept: 'Registro de venta de mercancía al contado comercial',
-    reference: 'Factura F-301',
-    author: 'L.C. Gerardo Pérez',
-    isAdjustment: false,
-    movements: [
-      { accountCode: '4', debit: 180000, credit: null },
-      { accountCode: '40', debit: null, credit: 180000 }
+    number: 1,
+    concept: 'REG. VENTAS DE MERCANCÍAS EFECTUADAS',
+    items: [
+      { accountCode: '102.00', accountName: 'BANCOS', debit: 205000.00, credit: 0 },
+      { accountCode: '501.00', accountName: 'COSTO DE VENTAS', debit: 123000.00, credit: 0 },
+      { accountCode: '401.00', accountName: 'VENTAS', debit: 0, credit: 205000.00 },
+      { accountCode: '120.00', accountName: 'ALMACÉN', debit: 0, credit: 123000.00 }
     ]
   },
   {
-    id: 'p-2a',
-    number: 'P-03',
-    date: '2026-01-15',
-    type: 'Diario',
-    concept: 'Costo de lo vendido según salida de Almacén por venta F-301',
-    reference: 'Salida Almacén S-03',
-    author: 'L.C. Gerardo Pérez',
-    isAdjustment: false,
-    movements: [
-      { accountCode: '50', debit: 90000, credit: null },
-      { accountCode: '3', debit: null, credit: 90000 }
-    ]
-  },
-  {
-    id: 'p-3',
-    number: 'P-04',
-    date: '2026-01-20',
+    id: 'a3',
+    date: '2020-12-05',
     type: 'Egreso',
-    concept: 'Pago del recibo telefónico e internet de oficinas',
-    reference: 'Factura TEL-881',
-    author: 'L.C. Gerardo Pérez',
-    isAdjustment: false,
-    movements: [
-      { accountCode: '51', subaccountCode: '51.03', debit: 8500, credit: null },
-      { accountCode: '2', debit: null, credit: 8500 }
+    number: 1,
+    concept: 'REG. REBAJAS Y DESCUENTOS S/VENTAS',
+    items: [
+      { accountCode: '401.00', accountName: 'VENTAS', debit: 10250.00, credit: 0 },
+      { accountCode: '102.00', accountName: 'BANCOS', debit: 0, credit: 10250.00 }
     ]
   },
   {
-    id: 'p-4',
-    number: 'P-05',
-    date: '2026-01-28',
+    id: 'a4',
+    date: '2020-12-08',
     type: 'Egreso',
-    concept: 'Pago de renta mensual del local comercial',
-    reference: 'Factura REC-45',
-    author: 'L.C. Gerardo Pérez',
-    isAdjustment: false,
-    movements: [
-      { accountCode: '52', subaccountCode: '52.01', debit: 12000, credit: null },
-      { accountCode: '2', debit: null, credit: 12000 }
+    number: 1,
+    concept: 'REG. COMPRAS MERCANCÍAS EFECTUADAS',
+    items: [
+      { accountCode: '120.00', accountName: 'ALMACÉN', debit: 155000.00, credit: 0 },
+      { accountCode: '102.00', accountName: 'BANCOS', debit: 0, credit: 155000.00 }
     ]
   },
   {
-    id: 'p-5',
-    number: 'P-06',
-    date: '2026-02-05',
+    id: 'a5',
+    date: '2020-12-10',
     type: 'Ingreso',
-    concept: 'Cobro de intereses ganados en cuenta de Bancos',
-    reference: 'EdoCta Bancomer',
-    author: 'L.C. Gerardo Pérez',
-    isAdjustment: false,
-    movements: [
-      { accountCode: '2', debit: 3200, credit: null },
-      { accountCode: '41', debit: null, credit: 3200 }
+    number: 2,
+    concept: 'REG. REBAJAS Y DESCUENTOS S/COMPRAS',
+    items: [
+      { accountCode: '102.00', accountName: 'BANCOS', debit: 6200.00, credit: 0 },
+      { accountCode: '120.00', accountName: 'ALMACÉN', debit: 0, credit: 6200.00 }
     ]
   },
   {
-    id: 'p-adj-1',
-    number: 'A-01',
-    date: '2026-12-31',
+    id: 'a6',
+    date: '2020-12-12',
+    type: 'Egreso',
+    number: 2,
+    concept: 'REG. GASTOS DE FÁBRICA EFECTUADOS',
+    items: [
+      { accountCode: '120.00', accountName: 'ALMACÉN', debit: 7000.00, credit: 0 },
+      { accountCode: '102.00', accountName: 'BANCOS', debit: 0, credit: 7000.00 }
+    ]
+  },
+  {
+    id: 'a7',
+    date: '2020-12-15',
     type: 'Diario',
-    concept: 'Depreciación anual acumulada del Mobiliario y Equipo',
-    reference: 'Papeles de Trabajo Dep',
-    author: 'L.C. Gerardo Pérez',
-    isAdjustment: true,
-    movements: [
-      { accountCode: '53', debit: 1500, credit: null },
-      { accountCode: '7-D', debit: null, credit: 1500 }
+    number: 2,
+    concept: 'REG. INTERESES DEVENGADOS A FAVOR',
+    items: [
+      { accountCode: '101.00', accountName: 'CAJA', debit: 2000.00, credit: 0 },
+      { accountCode: '760.00', accountName: 'PRODUCTOS FINANCIEROS', debit: 0, credit: 2000.00 }
+    ]
+  },
+  {
+    id: 'a8',
+    date: '2020-12-20',
+    type: 'Egreso',
+    number: 2,
+    concept: 'REG. DEVOLUCIONES SOBRE VENTAS',
+    items: [
+      { accountCode: '401.00', accountName: 'VENTAS', debit: 20000.00, credit: 0 },
+      { accountCode: '120.00', accountName: 'ALMACÉN', debit: 12000.00, credit: 0 },
+      { accountCode: '102.00', accountName: 'BANCOS', debit: 0, credit: 20000.00 },
+      { accountCode: '501.00', accountName: 'COSTO DE VENTAS', debit: 0, credit: 12000.00 }
+    ]
+  },
+  {
+    id: 'a9',
+    date: '2020-12-28',
+    type: 'Diario',
+    number: 3,
+    concept: 'REG. GASTOS DE OPERACIÓN EFECTUADOS',
+    items: [
+      { accountCode: '601.00', accountName: 'GASTOS DE VENTA Y DISTRIBUCIÓN', debit: 1925.00, credit: 0 },
+      { accountCode: '602.00', accountName: 'GASTOS DE ADMINISTRACIÓN', debit: 1575.00, credit: 0 },
+      { accountCode: '203.00', accountName: 'DOCUMENTOS POR PAGAR', debit: 0, credit: 3500.00 }
+    ]
+  },
+  {
+    id: 'a10',
+    date: '2020-12-28',
+    type: 'Ingreso',
+    number: 3,
+    concept: 'REG. DEVOLUCIONES SOBRE COMPRAS',
+    items: [
+      { accountCode: '102.00', accountName: 'BANCOS', debit: 11000.00, credit: 0 },
+      { accountCode: '120.00', accountName: 'ALMACÉN', debit: 0, credit: 11000.00 }
+    ]
+  },
+  {
+    id: 'a11',
+    date: '2020-12-28',
+    type: 'Egreso',
+    number: 3,
+    concept: 'REG. GASTOS DE OPERACIÓN EFECTUADOS',
+    items: [
+      { accountCode: '203.00', accountName: 'DOCUMENTOS POR PAGAR', debit: 3500.00, credit: 0 },
+      { accountCode: '102.00', accountName: 'BANCOS', debit: 0, credit: 3500.00 }
+    ]
+  },
+  {
+    id: 'aj1',
+    date: '2020-12-30',
+    type: 'Diario',
+    number: 4,
+    concept: 'REG. AJUSTE PARA EL RESULTADO EN VENTAS',
+    items: [
+      { accountCode: '401.00', accountName: 'VENTAS', debit: 111000.00, credit: 0 },
+      { accountCode: '501.00', accountName: 'COSTO DE VENTAS', debit: 0, credit: 111000.00 }
+    ]
+  },
+  {
+    id: 'aj2',
+    date: '2020-12-30',
+    type: 'Diario',
+    number: 5,
+    concept: 'REG. AJUSTE CTAS. RESULTADO ACREEDORAS',
+    items: [
+      { accountCode: '401.00', accountName: 'VENTAS', debit: 63750.00, credit: 0 },
+      { accountCode: '760.00', accountName: 'PRODUCTOS FINANCIEROS', debit: 2000.00, credit: 0 },
+      { accountCode: '900.00', accountName: 'PÉRDIDA Y GANANCIAS', debit: 0, credit: 65750.00 }
+    ]
+  },
+  {
+    id: 'aj3',
+    date: '2020-12-30',
+    type: 'Diario',
+    number: 6,
+    concept: 'REG. AJUSTE CTAS. RESULTADO DEUDORAS',
+    items: [
+      { accountCode: '900.00', accountName: 'PÉRDIDA Y GANANCIAS', debit: 3500.00, credit: 0 },
+      { accountCode: '601.00', accountName: 'GASTOS DE VENTA Y DISTRIBUCIÓN', debit: 0, credit: 1925.00 },
+      { accountCode: '602.00', accountName: 'GASTOS DE ADMINISTRACIÓN', debit: 0, credit: 1575.00 }
+    ]
+  },
+  {
+    id: 'aj4',
+    date: '2020-12-30',
+    type: 'Diario',
+    number: 7,
+    concept: 'REG. AJUSTE P/UTILIDAD ANTES DE IMPTO.',
+    items: [
+      { accountCode: '900.00', accountName: 'PÉRDIDA Y GANANCIAS', debit: 62250.00, credit: 0 },
+      { accountCode: '354.00', accountName: 'UTILIDAD DEL EJERCICIO', debit: 0, credit: 62250.00 }
     ]
   }
 ];
+
+const DEMO_POLICIES: Policy[] = initialEntries.map(entry => {
+  const prefix = entry.type === 'Diario' ? 'D' : entry.type === 'Ingreso' ? 'I' : entry.type === 'Egreso' ? 'E' : 'C';
+  const numStr = entry.number < 10 ? `0${entry.number}` : String(entry.number);
+  const isAdj = entry.id.startsWith('aj');
+  return {
+    id: entry.id,
+    number: `${prefix}-${numStr}`,
+    date: entry.date,
+    type: entry.type as 'Diario' | 'Ingreso' | 'Egreso' | 'Cheque',
+    concept: entry.concept,
+    reference: '',
+    author: 'L.C. Gerardo Pérez',
+    isAdjustment: isAdj,
+    movements: entry.items.map(it => ({
+      accountCode: it.accountCode,
+      subaccountCode: null,
+      debit: it.debit || null,
+      credit: it.credit || null
+    }))
+  };
+});
 
 export const useAccountingStore = create<AccountingState>((set) => {
   // Load initial states from localStorage safely
@@ -223,9 +311,24 @@ export const useAccountingStore = create<AccountingState>((set) => {
     }
   };
 
-  const initialHeader = getStored<CompanyHeader>('header', DEFAULT_COMPANY_HEADER);
-  const initialPolicies = getStored<Policy[]>('policies', DEMO_POLICIES);
-  const initialAccounts = getStored<Account[]>('accounts', DEFAULT_ACCOUNTS);
+  let initialHeader = getStored<CompanyHeader>('header', DEFAULT_COMPANY_HEADER);
+  let initialPolicies = getStored<Policy[]>('policies', DEMO_POLICIES);
+  let initialAccounts = getStored<Account[]>('accounts', DEFAULT_ACCOUNTS);
+
+  // Auto-migration for schema/data refresh in AI Studio dev environment
+  const isOldDemo = initialPolicies.some(p => p.concept === 'Apertura de saldos iniciales de la empresa') ||
+                    initialPolicies.some(p => p.movements.some(m => m.accountCode === '103.00')) ||
+                    initialPolicies.length !== 15;
+  const missingNewAccounts = !initialAccounts.some(a => a.code === '760.00');
+
+  if (isOldDemo || missingNewAccounts) {
+    initialHeader = DEFAULT_COMPANY_HEADER;
+    initialPolicies = DEMO_POLICIES;
+    initialAccounts = DEFAULT_ACCOUNTS;
+    saveStored('header', DEFAULT_COMPANY_HEADER);
+    saveStored('policies', DEMO_POLICIES);
+    saveStored('accounts', DEFAULT_ACCOUNTS);
+  }
   const initialSubaccounts = getStored<Subaccount[]>('subaccounts', DEFAULT_SUBACCOUNTS);
   const initialScratchpadText = getStored<string>('scratchpad', '/* Bloque de Notas y Lápiz Contable */\n// Realiza cálculos aritméticos sencillos rápido\n800000 - 8500 - 12000 = 779500\n150000 * 0.10 = 15000\n\n');
   const initialBalanceSheetFormat = getStored<'Reporte' | 'Cuenta'>('balanceSheetFormat', 'Cuenta');
