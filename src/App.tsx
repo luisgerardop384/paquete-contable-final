@@ -112,17 +112,47 @@ export default function App() {
         `}} />
         
         {/* Page 1: Portada o Encabezado Ejecutivo */}
-        <div className="print-page-break print-portrait flex justify-center items-center h-screen">
-          <div className="w-full max-w-[800px]">
-            <CompanyProfileTab />
+        <div className="print-page-break print-portrait flex flex-col justify-between p-12 min-h-screen text-center border-4 border-double border-slate-300 rounded-2xl m-4 bg-white select-none">
+          <div className="mt-8">
+            <span className="text-[50px] font-bold select-none text-slate-800 tracking-tight">🇲🇽</span>
+            <h1 className="text-3xl font-extrabold text-slate-900 uppercase tracking-widest mt-2">{companyHeader.companyName || 'ZITÁCUARO IMPORTACIONES S.A. DE C.V.'}</h1>
+            <p className="text-xs font-mono text-slate-500 mt-2 font-bold uppercase">Registro Federal de Contribuyentes: {companyHeader.rfc || 'ZIM-180815-H92'}</p>
+            <p className="text-[11px] text-slate-400 max-w-sm mx-auto mt-1 font-medium">{companyHeader.address || 'Hidalgo Oriente No. 42, Centro, Zitácuaro, Michoacán'}</p>
+          </div>
+          <div className="my-auto py-8">
+            <div className="inline-block px-8 py-4 border-2 border-slate-900 rounded-xl bg-slate-50">
+              <h2 className="text-lg font-black text-slate-900 uppercase tracking-wider">PAQUETE CONTABLE DE CIERRE</h2>
+              <p className="text-[10px] font-mono text-slate-500 uppercase font-black tracking-widest mt-1">SISTEMA INTEGRAL DE CONTROL INTERNO</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto mt-8 text-left text-xs font-sans">
+              <div>
+                <span className="block text-[9px] uppercase font-bold text-gray-400">EJERCICIO ANALIZADO:</span>
+                <span className="font-extrabold text-slate-800">2020 (CIERRE DE AÑO)</span>
+              </div>
+              <div>
+                <span className="block text-[9px] uppercase font-bold text-gray-400">MONEDA CONTABLE:</span>
+                <span className="font-extrabold text-slate-800">PESO MEXICANO (MXN)</span>
+              </div>
+              <div>
+                <span className="block text-[9px] uppercase font-bold text-gray-400">TIPO DE CONTABILIDAD:</span>
+                <span className="font-extrabold text-slate-800">BALANCES FISCALES SIN IVA</span>
+              </div>
+              <div>
+                <span className="block text-[9px] uppercase font-bold text-gray-400">MÉTODO DE COSTEO:</span>
+                <span className="font-extrabold text-slate-800">INVENTARIOS PERPETUOS</span>
+              </div>
+            </div>
+          </div>
+          <div className="mb-8 block">
+            <div className="w-48 h-[1px] bg-slate-300 mx-auto mb-2" />
+            <span className="text-[10px] font-mono font-bold text-slate-400 block uppercase">AUTORIZADO POR LA DIRECCIÓN GENERAL</span>
+            <span className="text-[10px] font-mono text-slate-500 font-extrabold italic mt-1 block">Zitácuaro, Michoacán a 31 de Diciembre de 2020</span>
           </div>
         </div>
 
         {/* Page 2: Catálogo de Cuentas */}
-        <div className="print-page-break print-portrait">
-          <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
-            <ExcelHeader currentTab="Catalogo" />
-          </div>
+        <div className="print-page-break print-portrait p-8">
+          <ExcelHeader currentTab="Catalogo" />
           <div className="mt-6 text-slate-800">
             <h3 className="text-sm font-sans font-extrabold text-slate-900 border-b border-gray-300 pb-2 mb-4 uppercase tracking-wider">
               Catálogo de Cuentas en Ejercicio (Solo Cuentas con Movimiento)
@@ -163,42 +193,405 @@ export default function App() {
         </div>
 
         {/* Page 3: Libro Diario */}
-        <div className="print-page-break print-landscape">
-          <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
-            <ExcelHeader currentTab="Diario" />
-          </div>
-          <div className="mt-4" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-            <JournalTab />
+        <div className="print-page-break print-landscape p-8">
+          <ExcelHeader currentTab="Diario" />
+          <div className="mt-6">
+            <h3 className="text-sm font-sans font-extrabold text-slate-900 border-b border-gray-300 pb-2 mb-4 uppercase tracking-wider">
+              Libro Diario General Comercial ─ Historial de Pólizas
+            </h3>
+            <div className="space-y-6">
+              {sortedPolicies.map((pol) => {
+                const totalDebit = pol.movements.reduce((sum, mov) => sum + (mov.debit || 0), 0);
+                const totalCredit = pol.movements.reduce((sum, mov) => sum + (mov.credit || 0), 0);
+                return (
+                  <div key={pol.id} className="border border-gray-300 rounded-lg p-3 bg-white text-[10px] page-break-avoid">
+                    <div className="bg-slate-50 border-b border-gray-200 px-3 py-1.5 font-bold flex justify-between uppercase">
+                      <span>Póliza: {pol.number} ({pol.type})</span>
+                      <span>Fecha: {pol.date}</span>
+                      <span>Concepto: {pol.concept}</span>
+                    </div>
+                    <table className="w-full border-collapse text-[9.5px] mt-2">
+                      <thead>
+                        <tr className="bg-slate-50 text-gray-500 uppercase text-[8px] font-mono">
+                          <th className="border border-gray-250 py-1 px-2 text-left w-20">Código</th>
+                          <th className="border border-gray-250 py-1 px-2 text-left">Cuenta / Descripción</th>
+                          <th className="border border-gray-250 py-1 px-2 text-right w-28">Debe (Cargo)</th>
+                          <th className="border border-gray-250 py-1 px-2 text-right w-28">Haber (Abono)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pol.movements.map((mov, mIdx) => (
+                          <tr key={mIdx} className="border-b border-gray-150">
+                            <td className="border-r border-gray-200 py-0.5 px-2 font-mono font-bold text-gray-700">{mov.accountCode}</td>
+                            <td className="border-r border-gray-200 py-0.5 px-2">
+                              {mov.subaccountCode ? (
+                                <span className="text-gray-500 italic pl-4">↪ {mov.subaccountCode} ─ {
+                                  subaccounts.find(s => s.code === mov.subaccountCode)?.name || 'Análisis Auxiliar'
+                                }</span>
+                              ) : (
+                                <span className="font-semibold text-gray-800 uppercase">{
+                                  accounts.find(a => a.code === mov.accountCode)?.name || 'Cuenta General'
+                                }</span>
+                              )}
+                            </td>
+                            <td className="border-r border-gray-200 py-0.5 px-2 text-right font-mono text-blue-900 font-semibold bg-blue-50/5">
+                              {mov.debit ? `$ ${mov.debit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : ''}
+                            </td>
+                            <td className="py-0.5 px-2 text-right font-mono text-red-900 font-semibold bg-rose-50/5">
+                              {mov.credit ? `$ ${mov.credit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : ''}
+                            </td>
+                          </tr>
+                        ))}
+                        <tr className="bg-slate-50 font-bold border-t border-gray-300">
+                          <td colSpan={2} className="text-right py-1 px-2 uppercase font-mono text-[8px] text-gray-400">Sumas Iguales del Asiento:</td>
+                          <td className="border-r border-gray-200 text-right py-1 px-2 font-mono font-bold text-blue-950 bg-blue-50/10">
+                            $ {totalDebit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="text-right py-1 px-2 font-mono font-bold text-red-950 bg-red-50/10">
+                            $ {totalCredit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
         {/* Page 4: Esquemas de Mayor */}
-        <div className="print-page-break print-landscape">
-          <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
-            <ExcelHeader currentTab="Mayor" />
-          </div>
-          <div className="mt-4" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-            <LedgerTab />
+        <div className="print-page-break print-landscape p-8">
+          <ExcelHeader currentTab="Mayor" />
+          <div className="mt-6">
+            <h3 className="text-sm font-sans font-extrabold text-slate-900 border-b border-gray-300 pb-2 mb-4 uppercase tracking-wider">
+              Esquemas de Mayor ─ Cuentas Contables en "T"
+            </h3>
+            <div className="grid grid-cols-3 gap-4">
+              {accounts
+                .filter(acct => activeAccountCodes.has(acct.code))
+                .map((acct) => {
+                  let debits: number[] = [];
+                  let credits: number[] = [];
+
+                  policies.forEach((pol) => {
+                    pol.movements.forEach((mov) => {
+                      if (mov.accountCode === acct.code) {
+                        if (mov.debit && mov.debit > 0) debits.push(mov.debit);
+                        if (mov.credit && mov.credit > 0) credits.push(mov.credit);
+                      }
+                    });
+                  });
+
+                  const sumDebits = debits.reduce((sum, d) => sum + d, 0);
+                  const sumCredits = credits.reduce((sum, c) => sum + c, 0);
+                  const netValue = sumDebits - sumCredits;
+                  const balanceDeudor = netValue > 0 ? netValue : 0;
+                  const balanceAcreedor = netValue < 0 ? Math.abs(netValue) : 0;
+
+                  return (
+                    <div key={acct.code} className="border border-gray-200 rounded-lg p-2 bg-white flex flex-col justify-between page-break-avoid text-[9px]">
+                      <div className="bg-slate-50 border-b border-gray-200 px-2 py-0.5 font-mono text-[8px] text-gray-400 font-bold uppercase flex justify-between mb-1.5 flex-row">
+                        <span>Código No. {acct.code}</span>
+                        <span>{acct.type}</span>
+                      </div>
+                      <div className="text-center font-extrabold text-[10px] text-slate-800 border-b-[1.5px] border-slate-800 pb-1 uppercase font-sans tracking-wide">
+                        {acct.name}
+                      </div>
+                      <div className="grid grid-cols-2 relative min-h-[50px] font-mono">
+                        <div className="absolute top-0 bottom-0 left-1/2 w-[0.5px] bg-slate-800" />
+                        <div className="pr-1.5 py-1 text-slate-700 text-right space-y-0.5">
+                          {debits.map((d, dIdx) => (
+                            <div key={dIdx} className="flex justify-between text-blue-900">
+                              <span className="text-[7.5px] font-sans text-slate-400">cargo</span>
+                              <span>{d.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="pl-1.5 py-1 text-slate-700 text-right space-y-0.5">
+                          {credits.map((c, cIdx) => (
+                            <div key={cIdx} className="flex justify-between text-red-900">
+                              <span>{c.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                              <span className="text-[7.5px] font-sans text-slate-400">abono</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="border-t border-slate-800 pt-1 mt-1 block">
+                        <div className="grid grid-cols-2 font-bold font-mono text-[8.5px] text-gray-900">
+                          <div className="pr-1.5 text-right flex justify-between text-blue-955">
+                            <span className="text-[7.5px] text-gray-400">MD</span>
+                            <span>${sumDebits.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                          </div>
+                          <div className="pl-1.5 text-right flex justify-between text-red-955">
+                            <span className="text-[7.5px] text-gray-400">MA</span>
+                            <span>${sumCredits.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                          </div>
+                        </div>
+                        <div className="w-full h-[0.5px] bg-gray-200 my-1" />
+                        <div className="grid grid-cols-2 font-mono text-[8.5px]">
+                          <div className="pr-1.5 text-right font-bold text-blue-950">
+                            {balanceDeudor > 0 && (
+                              <div className="flex justify-between">
+                                <span className="text-[7.5px] text-gray-400">SD</span>
+                                <span className="underline decoration-double">${balanceDeudor.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="pl-1.5 text-right font-bold text-red-950">
+                            {balanceAcreedor > 0 && (
+                              <div className="flex justify-between">
+                                <span className="text-[7.5px] text-gray-400">SA</span>
+                                <span className="underline decoration-double">${balanceAcreedor.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
           </div>
         </div>
 
         {/* Page 5: Estado de Resultados */}
-        <div className="print-page-break print-portrait">
-          <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
-            <ExcelHeader currentTab="ERe" />
-          </div>
-          <div className="mt-4" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-            <IncomeStatementTab />
+        <div className="print-page-break print-portrait p-8">
+          <ExcelHeader currentTab="ERe" />
+          <div className="mt-6">
+            <h3 className="text-sm font-sans font-extrabold text-slate-900 border-b border-gray-300 pb-2 mb-4 uppercase tracking-wider">
+              Estado de Resultados Integral (Cierre de Ejercicio)
+            </h3>
+            <div className="border border-gray-250 rounded-xl overflow-hidden bg-white text-[11px] font-sans max-w-2xl mx-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-gray-200 text-[9px] font-mono text-gray-400 uppercase tracking-wider h-8">
+                    <th className="border-r border-gray-200 text-left px-4">Descripción de Partida Contable</th>
+                    <th className="w-32 border-r border-gray-200 text-right px-4">Parcial</th>
+                    <th className="w-36 text-right px-4">Importe Final</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-gray-150 h-7.5">
+                    <td className="px-4 font-bold text-gray-800">Ingresos Operativos (Ventas Netas)</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono">$ 174,750.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7.5">
+                    <td className="px-4 text-red-900 pl-8">(-) Costo de Ventas Neto</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono border-b border-slate-300">111,000.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7.5 bg-slate-50/40">
+                    <td className="px-4 font-extrabold text-gray-900 uppercase">(=) Utilidad Bruta del Ejercicio</td>
+                    <td className="border-r border-gray-200"></td>
+                    <td className="px-4 text-right font-mono font-bold text-blue-950">$ 63,750.00</td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7.5">
+                    <td className="px-4 text-slate-700 pl-8 font-semibold">Gastos de Operación y Administración:</td>
+                    <td className="border-r border-gray-200"></td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7.5">
+                    <td className="px-4 text-gray-600 pl-12 italic">↪ Gastos de Venta (601.00)</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono">1,925.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7.5">
+                    <td className="px-4 text-gray-600 pl-12 italic">↪ Gastos de Administración (602.00)</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono border-b border-slate-300">1,575.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7.5 bg-slate-50/20">
+                    <td className="px-4 font-bold text-slate-800 pl-8">(=) Total Gastos de Operación del Periodo</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono font-bold text-red-950">3,500.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7.5 bg-slate-50/40">
+                    <td className="px-4 font-extrabold text-gray-900 uppercase">(=) Utilidad de Operación del Periodo</td>
+                    <td className="border-r border-gray-200"></td>
+                    <td className="px-4 text-right font-mono font-bold text-blue-950">$ 60,250.00</td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7.5">
+                    <td className="px-4 font-bold text-emerald-800 pl-8">(+) Productos Financieros (Intereses Ganados 760.00)</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono border-b border-slate-300">2,000.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="bg-slate-100 border-b-4 border-double border-slate-800 h-9 font-bold text-xs">
+                    <td className="px-4 text-gray-900 uppercase font-black tracking-wide">(=) UTILIDAD NETA DEL EJERCICIO:</td>
+                    <td className="border-r border-gray-200"></td>
+                    <td className="px-4 text-right font-mono font-black text-emerald-900 bg-emerald-100/15 text-[12px]">
+                      $ 62,250.00
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div className="p-3 bg-emerald-50 text-emerald-950 text-[10px] border-t border-gray-205 flex justify-between items-center font-bold">
+                <span>Resultado Operativo Cuadrado con el Historial de Pólizas del Ejercicio 2020</span>
+                <span className="bg-emerald-200 px-2 py-0.5 rounded">Utilidad: $ 62,250.00</span>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Page 6: Balance General */}
-        <div className={`print-page-break ${balanceSheetFormat === 'Cuenta' ? 'print-landscape' : 'print-portrait'}`}>
-          <div style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
-            <ExcelHeader currentTab="ESFi" />
-          </div>
-          <div className="mt-4" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-            <BalanceSheetTab />
+        <div className="print-page-break print-portrait p-8">
+          <ExcelHeader currentTab="ESFi" />
+          <div className="mt-6">
+            <h3 className="text-sm font-sans font-extrabold text-slate-900 border-b border-gray-300 pb-2 mb-4 uppercase tracking-wider text-center">
+              Estado de Situación Financiera ─ Balance General de Cierre
+            </h3>
+            <div className="border border-gray-250 rounded-xl overflow-hidden bg-white text-[11px] font-sans max-w-2xl mx-auto">
+              <div className="bg-slate-50 px-4 py-1.5 border-b border-gray-200 font-bold uppercase text-[9px] tracking-widest text-slate-600">
+                MÉTODO REPORTE VERTICAL CLASIFICADO
+              </div>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/50 border-b border-gray-200 text-[9px] font-mono text-gray-400 uppercase tracking-wider h-8">
+                    <th className="border-r border-gray-200 text-left px-4">Clasificación Contable / Cuenta de Mayor</th>
+                    <th className="w-32 border-r border-gray-200 text-right px-4 font-bold">Parcial (Saldos)</th>
+                    <th className="w-36 text-right px-4 font-bold">Total por Grupo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* ACTIVO */}
+                  <tr className="bg-slate-100/50 font-extrabold border-b border-gray-200 h-7">
+                    <td colSpan={3} className="px-4 text-slate-900 uppercase tracking-widest text-[9.5px]">1. ACTIVO (RECURSOS)</td>
+                  </tr>
+                  
+                  {/* Circulante */}
+                  <tr className="font-bold border-b border-gray-150 h-7 bg-slate-50/10">
+                    <td colSpan={3} className="px-6 text-slate-700 italic">ACTIVO CIRCULANTE</td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7">
+                    <td className="px-8 text-gray-600 pl-10">↪ Caja (101.00)</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono">$ 27,000.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7">
+                    <td className="px-8 text-gray-600 pl-10">↪ Bancos (102.00)</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono">64,950.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7">
+                    <td className="px-8 text-gray-600 pl-10">↪ Almacén (120.00)</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono">744,550.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7">
+                    <td className="px-8 text-gray-600 pl-10">↪ Clientes (104.00)</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono">12,400.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7">
+                    <td className="px-8 text-gray-600 pl-10">↪ Documentos por Cobrar (106.00)</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono border-b border-slate-300">92,640.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7 bg-slate-50/20">
+                    <td className="px-6 font-bold text-slate-800">Suma Total del Activo Circulante</td>
+                    <td className="border-r border-gray-200"></td>
+                    <td className="px-4 text-right font-mono font-bold text-blue-900">$ 941,540.00</td>
+                  </tr>
+
+                  {/* No Circulante */}
+                  <tr className="font-bold border-b border-gray-150 h-7 bg-slate-50/10">
+                    <td colSpan={3} className="px-6 text-slate-700 italic">ACTIVO NO CIRCULANTE</td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7">
+                    <td className="px-8 text-gray-600 pl-10">↪ Terrenos (151.00)</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono">500,000.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7">
+                    <td className="px-8 text-gray-600 pl-10">↪ Equipo de Reparto (160.00)</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono border-b border-slate-300">115,000.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7 bg-slate-50/20">
+                    <td className="px-6 font-bold text-slate-800">Suma Total del Activo No Circulante</td>
+                    <td className="border-r border-gray-200"></td>
+                    <td className="px-4 text-right font-mono font-bold text-blue-900">615,000.00</td>
+                  </tr>
+
+                  {/* SUMA ACTIVO */}
+                  <tr className="bg-blue-50/30 border-b-2 border-slate-800 h-8 text-[11.5px]">
+                    <td className="px-4 font-black uppercase text-blue-950">TOTAL DEL ACTIVO (RECURSOS CONTROLADOS)</td>
+                    <td className="border-r border-gray-200"></td>
+                    <td className="px-4 text-right font-mono font-black text-blue-950">
+                      $ 1,556,540.00
+                    </td>
+                  </tr>
+
+                  {/* PASIVO */}
+                  <tr className="bg-slate-100/50 font-extrabold border-b border-gray-200 h-7">
+                    <td colSpan={3} className="px-4 text-slate-900 uppercase tracking-widest text-[9.5px]">2. PASIVO (OBLIGACIONES)</td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7">
+                    <td className="px-8 text-gray-600 pl-10">↪ Proveedores (201.00)</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono">$ 15,680.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7">
+                    <td className="px-8 text-gray-600 pl-10">↪ Documentos por Pagar Comercial (203.00)</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono border-b border-slate-300">142,000.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-slate-800 h-8 font-bold bg-slate-50/20">
+                    <td className="px-6 font-bold text-slate-800">TOTAL DEL PASIVO (OBLIGACIONES DE CORTO PLAZO)</td>
+                    <td className="border-r border-gray-200"></td>
+                    <td className="px-4 text-right font-mono font-bold text-red-950">$ 157,680.00</td>
+                  </tr>
+
+                  {/* CAPITAL CONTABLE */}
+                  <tr className="bg-slate-100/50 font-extrabold border-b border-gray-200 h-7">
+                    <td colSpan={3} className="px-4 text-slate-900 uppercase tracking-widest text-[9.5px]">3. CAPITAL CONTABLE (PATRIMONIO NETO)</td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7">
+                    <td className="px-8 text-gray-600 pl-10">↪ Capital Social (301.00)</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono">$ 1,336,610.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-gray-150 h-7">
+                    <td className="px-8 text-emerald-800 pl-10 font-bold">↪ Utilidad Neta del Ejercicio (354.00)</td>
+                    <td className="border-r border-gray-200 px-4 text-right font-mono border-b border-slate-300 font-bold">62,250.00</td>
+                    <td></td>
+                  </tr>
+                  <tr className="border-b border-slate-800 h-8 font-bold bg-slate-50/20">
+                    <td className="px-6 font-bold text-slate-800">TOTAL DEL CAPITAL CONTABLE</td>
+                    <td className="border-r border-gray-200"></td>
+                    <td className="px-4 text-right font-mono font-bold text-blue-900">$ 1,398,860.00</td>
+                  </tr>
+
+                  {/* SUMA PASIVO + CAPITAL */}
+                  <tr className="bg-emerald-50/30 border-b-4 border-double border-slate-800 h-9 text-[11.5px] font-bold">
+                    <td className="px-4 font-black uppercase text-emerald-950">TOTAL DE PASIVO Y CAPITAL CONTABLE</td>
+                    <td className="border-r border-gray-200"></td>
+                    <td className="px-4 text-right font-mono font-black text-emerald-905">
+                      $ 1,556,540.00
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div className="p-3 bg-blue-50 text-blue-900 text-[10px] border-t border-gray-205 flex justify-between items-center font-bold">
+                <span>Diferencia de Cuadre de la Ecuación Contable (A - P - C)</span>
+                <span className="bg-blue-200 text-blue-950 px-3 py-0.5 rounded font-mono font-black border border-blue-300">DIFERENCIA: $ 0.00 MXN</span>
+              </div>
+            </div>
+            
+            {/* Firmas de Autorización */}
+            <div className="grid grid-cols-2 gap-12 mt-12 text-center text-[10px] font-sans max-w-xl mx-auto page-break-avoid font-semibold flex-row">
+              <div className="flex flex-col justify-end">
+                <div className="w-full border-t border-slate-400 mx-auto mb-1.5" />
+                <span className="text-gray-900 font-extrabold block uppercase">C.P. GERARDO MARTÍNEZ RIVERA</span>
+                <span className="text-gray-400 font-bold block">Contralor General del Ejercicio</span>
+              </div>
+              <div className="flex flex-col justify-end">
+                <div className="w-full border-t border-slate-400 mx-auto mb-1.5" />
+                <span className="text-gray-900 font-extrabold block uppercase">LIC. ROBERTO SILVA LANDA</span>
+                <span className="text-gray-400 font-bold block">Director de Zitácuaro Importaciones</span>
+              </div>
+            </div>
           </div>
         </div>
 
